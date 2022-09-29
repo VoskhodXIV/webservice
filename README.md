@@ -104,4 +104,4 @@ To run the app in production mode, use the following command:
 
 ## :scroll: License
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](./License)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](./LICENSE)
