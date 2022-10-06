@@ -39,18 +39,7 @@ git clone git@github.com:sydrawat01/webapp.git
   npm i
 ```
 
-## :hammer_and_wrench: Build
-
-To build the application, run the following command:
-
-```shell
-  #for yarn users
-  yarn build
-  #for npm users
-  npm run build
-```
-
-## :construction: Development
+## :hammer_and_wrench: Development
 
 > Make sure to have a valid .env file before running the following commands. You can view the [.env.example](./.env.example) file for reference.
 
