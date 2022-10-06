@@ -1,5 +1,7 @@
 # :spider_web: webapp
 
+[![Run unit test suite](https://github.com/ArtemisIX/webapp/actions/workflows/test-suite.yml/badge.svg)](https://github.com/ArtemisIX/webapp/actions/workflows/test-suite.yml)
+
 RESTful Backend API service for a web application.
 
 Demo API for reference: [Swaggerhub](https://app.swaggerhub.com/apis-docs/fall2022-csye6225/cloud-native-webapp/assignment-01)
