@@ -4,16 +4,15 @@ const helmet = require('helmet')
 
 const app = express()
 
-const healthz = require('./src/routes/health.route')
+const { userRoutes, healthz } = require('./src/routes/index.routes')
 const db = require('./src/models')
-const userRoutes = require('./src/routes/user.route')
 
 app.use(logger('common'))
 app.use(helmet({ contentSecurityPolicy: false }))
 app.use(express.json())
 
 app.use('/', healthz)
-app.use('/v1/account', userRoutes)
+app.use('/', userRoutes)
 
 db.connectionTest()
 db.sequelize.sync()
