@@ -6,12 +6,12 @@ const User = db.users
 
 module.exports = (req, res, next) => {
   const authHeader = req.headers.authorization
-  if (!authHeader) {
+  if (!authHeader || authHeader === undefined) {
     const err = new Error('Not Authenticated!')
     res.setHeader('WWW-Authenticate', 'Basic')
     err.status = 401
     err.message = 'User is not authenticated!'
-    res.status(401).send(err.message)
+    return res.status(401).send(err.message)
   }
 
   const auth = new Buffer.from(authHeader.split(' ')[1], 'base64')
@@ -25,15 +25,15 @@ module.exports = (req, res, next) => {
       username,
     },
   }).then((result) => {
-    const verify = bcrypt.compareSync(password, result.password)
-    console.log(`Verified User: ${verify}`)
+    let verify
+    if (result !== null) verify = bcrypt.compareSync(password, result.password)
 
     if (!verify) {
       const err = new Error('Not Authenticated!')
       res.setHeader('WWW-Authenticate', 'Basic')
-      err.status = 401
-      err.message = 'User is not authenticated!'
-      res.status(401).send(err.message)
+      err.status = 403
+      err.message = 'Action Forbidden!'
+      res.status(403).send(err.message)
     } else if (req.method === 'GET') {
       global.username = result.username
       next()

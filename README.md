@@ -56,9 +56,81 @@ To run the server in `dev` mode, run the following command:
 
 > This serves the app on `localhost:3000` via the unless you specify a `PORT` number in the .env file.
 
+## :busstop: API Endpoints
+
+This cloud-native web appilcation RESTful API mirror the API mentioned in the [Swwagger Docs here](https://app.swaggerhub.com/apis-docs/fall2022-csye6225/cloud-native-webapp/assignment-02#/Account).
+
+### :closed_lock_with_key: Authenticated Users
+
+- **GET** _/v1/account/{accountID}_ : Get the user account information
+  - **AccountID:** String (Required)
+  - **Response:** 200 _OK_, **Media Type:** Application/JSON
+  - **Response:** 401 _Unauthorized_
+  - **Response:** 403 _Forbidden_
+
+- **PUT** _/v1/account/{accountID}_ : Update the user's account information
+  - **AccountID:** String (Required)
+  - **Request Body:** Application/JSON (Required)
+
+    ```json
+      {
+        "first_name": "Jane",
+        "last_name": "Doe",
+        "password": "somepassword",
+        "username": "jane.doe@example.com"
+      }
+    ```
+
+  - **Response:** 204 _No Content_
+  - **Response:** 400 _Bad Request_
+  - **Response:** 401 _Unauthorized_
+  - **Response:** 403 _Forbidden_
+
+### :unlock: Unauthenticated Users
+
+- `**POST** _/v1/account_ : Create a user account
+  - **Request Body:** Application/JSON (Required)
+
+    ```json
+      {
+        "first_name": "Jane",
+        "last_name": "Doe",
+        "password": "somepassword",
+        "username": "jane.doe@example.com"
+      }
+    ```
+
+  - **Response:** 201 _User Created_
+  - **Response** 400 _Bad Request_
+
+### :lotus_position: Schemas
+
+```text
+  {
+    id: string($uuid)
+      example: d290f1ee-6c54-4b01-90e6-d701748f0851
+      readOnly: true
+    first_name*: string
+      example: Jane
+    last_name*: string
+      example: Doe
+    password*: string($password)
+      example: somepassword
+      writeOnly: true
+    username*: string($email)
+      example: jane.doe@example.com
+    account_created: string($date-time)
+      example: 2016-08-29T09:12:33.001Z
+      readOnly: true
+    account_updated: string($date-time)
+      example: 2016-08-29T09:12:33.001Z
+      readOnly: true
+  }
+```
+
 ## :test_tube: Testing
 
-To run the test suite, use the following commannds:
+To run the test suite, use the following commands:
 
 - To run the test suite in interactive mode:
 
