@@ -34,24 +34,29 @@ variable "subnet_id" {
 variable "ubuntu_version" {
   type        = string
   description = "Version of the custom AMI"
-  default     = "22.04"
+  default     = "22_04_LTS"
 }
 
 locals {
   truncated_sha = substr(data.git-commit.cwd-head.hash, 0, 8)
   version       = data.git-repository.cwd.head == "master" && data.git-repository.cwd.is_clean ? var.ubuntu_version : "${var.ubuntu_version}-${local.truncated_sha}"
+  timestamp     = regex_replace(timestamp(), "[- TZ:]", "")
 }
-
 
 data "git-repository" "cwd" {}
 data "git-commit" "cwd-head" {}
 
 source "amazon-ebs" "ec2" {
-  region = "${var.aws_region}"
-  # ami_name = "ubuntu-${local.version}"
-  ami_name = "EC2-AMI-${formatdate("MM-DD-YYYY(hh.mm.ss)", timestamp())}"
+  # ami_name = "${regex_replace("EC2-AMI-${local.version}", "[$&+,:;=?@#|'<>.-^*()%!]", "")}"
   # ami_name        = "EC2-AMI-${substr(data.git-commit.commit.hash, 0, 8)}"
+  # ami_name        = "EC2-AMI-{{ ${substr(data.git-commit.cwd-head.hash, 0, 8)} }}"
+  region          = "${var.aws_region}"
+  ami_name        = "EC2-AMI-${local.timestamp}"
   ami_description = "EC2 AMI for CSYE 6225 built by ${data.git-commit.cwd-head.author}"
+  ami_users = [
+    "057919684206", # dev account ID
+    "235271618064"  # prod account ID
+  ]
   tags = {
     Name        = "EC2-AMI-${local.version}"
     Base_AMI_ID = "${var.source_ami}"

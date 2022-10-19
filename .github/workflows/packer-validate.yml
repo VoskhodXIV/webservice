@@ -6,7 +6,7 @@ on:
     branches: [ master ]
 
 jobs:
-  init:
+  validate:
     runs-on: ubuntu-latest
     name: Validate packer template for the custom AMI
     steps:
@@ -17,6 +17,7 @@ jobs:
         run: |
           zip -r webapp.zip ./
           pwd ./webapp
+
       - name: Packer init
         uses: hashicorp/packer-github-actions@master
         with:

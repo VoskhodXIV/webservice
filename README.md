@@ -56,11 +56,11 @@ To run the server in `dev` mode, run the following command:
 
 > This serves the app on `localhost:3000` via the unless you specify a `PORT` number in the .env file.
 
-## :busstop: API Endpoints
+### :busstop: API Endpoints
 
 This cloud-native web appilcation RESTful API mirror the API mentioned in the [Swwagger Docs here](https://app.swaggerhub.com/apis-docs/fall2022-csye6225/cloud-native-webapp/assignment-02#/Account).
 
-### :closed_lock_with_key: Authenticated Users
+#### :closed_lock_with_key: Authenticated Users
 
 - **GET** _/v1/account/{accountID}_ : Get the user account information
   - **AccountID:** String (Required)
@@ -86,7 +86,7 @@ This cloud-native web appilcation RESTful API mirror the API mentioned in the [S
   - **Response:** 401 _Unauthorized_
   - **Response:** 403 _Forbidden_
 
-### :unlock: Unauthenticated Users
+#### :unlock: Unauthenticated Users
 
 - `**POST** _/v1/account_ : Create a user account
   - **Request Body:** Application/JSON (Required)
@@ -103,7 +103,7 @@ This cloud-native web appilcation RESTful API mirror the API mentioned in the [S
   - **Response:** 201 _User Created_
   - **Response** 400 _Bad Request_
 
-### :lotus_position: Schemas
+#### Schemas
 
 ```text
   {
@@ -160,6 +160,83 @@ To run the app in production mode, use the following command:
   #for npm users
   npm run start
 ```
+
+## :package: [Packer](https://learn.hashicorp.com/tutorials/packer/get-started-install-cli?in=packer/aws-get-started)
+
+We will build custom AMI (Amazon Machine Image) using Packer from HashiCorp.
+
+### :arrow_heading_down: Installing Packer
+
+Install Packer using Homebrew (only on MacOS):
+
+- First, install the HashiCorp tap, a repository of all our Homebrew packages:
+
+```shell
+brew tap hashicorp/tap
+```
+
+- Now, install Packer with `hashicorp/tap/packer`:
+
+```shell
+brew install hashicorp/tap/packer
+```
+
+- To update to the latest, run:
+
+```shell
+brew upgrade hashicorp/tap/packer
+```
+
+- After installing Packer, verify the installation worked by opening a new command prompt or console, and checking that `packer` is available:
+
+```shell
+packer
+```
+
+> NOTE: If you get an error that packer could not be found, then your PATH environment variable was not set up properly. Please go back and ensure that your PATH variable contains the directory which has Packer installed. Otherwise, Packer is installed and you're ready to go!
+
+### :wrench: Building Custom AMI using Packer
+
+Packer uses Hashicorp Configuration Language(HCL) to create a build template. We'll use the [Packer docs](https://www.packer.io/docs/templates/hcl_templates) to create the build template file.
+
+> NOTE: The file should end with the `.pkr.hcl` extension to be parsed using the HCL2 format.
+
+#### Create the `.pkr.hcl` template
+
+The custom AMI should have the following features:
+
+> NOTE: The builder to be used is `amazon-ebs`.
+
+- **OS:** `Ubuntu 22.04 LTS`
+- **Build:** built on the default VPC
+- **Device Name:** `/dev/sda1/`
+- **Volume Size:** `50GiB`
+- **Volume Type:** `gp2`
+- Have valid `provisioners`.
+- Pre-installed dependencies using a shell script.
+- Web application software pre-installed on the AMI.
+
+#### Shell Provisioners
+
+This will automate the process of updating the OS packages and installing software on the AMI and will have our application in a running state whenever the custom AMI is used to launch an EC2 instance. It should also copy artifacts to the AMI in order to get the application running. It is important to bootstrap our application here, instead of manually SSH-ing into the AMI instance.
+
+Install application prerequisites, middlewares and runtime dependencies here. Update the permission and file ownership on the copied application artifacts.
+
+> NOTE: The file provisioners must copy the application artifacts and configuration to the right location.
+
+#### [systemd](https://systemd.io/)
+
+`systemd` s a suite of basic building blocks for a Linux system. It provides a system and service manager that runs as PID 1 and starts the rest of the system.. This will help us bootstrap our application and have it in a running state when we launch our custom AMI EC2 instance using the CloudFormation stack.
+
+## :octocat: CI/CD pipelines
+
+### Validate template
+
+Validate the packer template when a pull request is opened. The PR status checks should fail and block merge in case the template is invalid.
+
+### Build AMI
+
+The AMI should be built when the PR is merged. The ami should be shared with the AWS `prod` account automatically. [This can be done by providing the AWS account ID in the packer template, [see here](https://developer.hashicorp.com/packer/plugins/builders/amazon/ebs#ami_users)].
 
 ## :ninja: Author
 

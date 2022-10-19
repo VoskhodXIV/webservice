@@ -1,0 +1,72 @@
+name: Web Service Continuous Integration
+
+env:
+  ARTIFACT_NAME: webapp
+  AWS_REGION: us-west-1
+
+on:
+  push:
+    branches: [ master ]
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [16.x]
+
+    name: Run unit tests
+    steps:
+      - uses: actions/checkout@v2
+      - name: 'Create .env file'
+        run: |
+          touch .env
+          echo ENVIRONMENT=${{ secrets.ENVIRONMENT }} >> .env
+          echo HOSTNAME=${{ secrets.HOSTNAME }} >> .env
+          echo PORT=${{ secrets.APP_PORT }} >> .env
+          echo DATABASE_NAME=${{ secrets.DATABASE_NAME }} >> .env
+          echo DBUSER=${{ secrets.DBUSER }} >> .env
+          echo DBPASSWORD=${{ secrets.DBPASSWORD }} >> .env
+      - uses: actions/setup-node@v2
+        with:
+          node-version: ${{ matrix.node-version }}
+      - run: yarn
+      - run: yarn start
+  # Packer init, validate and build
+  packer:
+    needs: tests
+    runs-on: ubuntu-latest
+    name: Build AWS Custom AMI with Node Application artifacts
+    steps:
+      - name: Checkout code from branch
+        uses: actions/checkout@v2
+
+      - name: Build artifacts
+        run: |
+          zip -r webapp.zip ./
+          pwd ./webapp
+
+      - name: Packer init
+        uses: hashicorp/packer-github-actions@master
+        with:
+          command: init
+          target: aws-ami.pkr.hcl
+
+      - name: Validate packer template
+        uses: hashicorp/packer-github-actions@master
+        with:
+          command: validate
+          target: ami.pkr.hcl
+
+      - name: Packer build
+        uses: hashicorp/packer-github-actions@master
+        with:
+          command: build
+          arguments: "-color=false -on-error=abort -var aws_access_key=$AWS_PROD_ACCESS_KEY -var aws_secret_key=$AWS_PROD_SECRET_KEY -var subnet_id=$AWS_DEFAULT_SUBNET_ID -var aws_region=$AWS_REGION -var source_ami=$SOURCE_AMI"
+          target: ami.pkr.hcl
+        env:
+          PACKER_LOG: 1
+          AWS_DEV_ACCESS_KEY: ${{ secrets.AWS_PROD_ACCESS_KEY }}
+          AWS_DEV_SECRET_KEY: ${{ secrets.AWS_PROD_SECRET_KEY }}
+          AWS_DEV_SUBNET_ID: ${{ secrets.AWS_DEFAULT_SUBNET_ID }}
+          AWS_REGION: ${{ secrets.AWS_REGION }}
+          SOURCE_AMI: ${{ secrets.SOURCE_AMI }}

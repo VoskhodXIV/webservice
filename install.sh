@@ -1,13 +1,15 @@
 #!/bin/bash
-###############################################################################
-# Author: Siddharth Rawat
-# Copyright 2022 Artemis IX
-# This script installs all the dependencies on the AMI:
-# 1. Upgrade the OS packages.
-# 2. Install all the application prerequisites, middleware, and runtime.
-# 3. Install PostgreSQL and setup the database.
-# 4. Update permission and file ownership on the copied application artifacts.
-###############################################################################
+############################################################################################
+##                                    install.sh                                          ##
+##                              Author: Siddharth Rawat                                   ##
+##                             Copyright 2022 Artemis IX                                  ##
+##                  This script installs all the dependencies on the AMI                  ##
+## 1. Upgrade the OS packages.                                                            ##
+## 2. Install all the application prerequisites, middleware, and runtime.                 ##
+## 3. Install PostgreSQL and setup the database.                                          ##
+## 4. Update permission and file ownership on the copied application artifacts.           ##
+## 5. Start the REST API service                                                          ##
+############################################################################################
 
 echo "+-----------------------------------------------------------------------------------------------------------------------------------------+"
 echo "|                                                                                                                                         |"
