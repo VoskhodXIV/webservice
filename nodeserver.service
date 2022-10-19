@@ -1,0 +1,14 @@
+[Unit]
+Description=REST API webapp
+After=multi-user.target
+
+[Service]
+Type=simple
+User=ubuntu
+ExecStart=/usr/bin/node /home/ubuntu/webapp/app.js
+EnvironmentFile=/home/ubuntu/webapp/.env
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
