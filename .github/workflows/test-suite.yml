@@ -15,28 +15,19 @@ jobs:
     strategy:
       matrix:
         node-version: [16.x]
-    services:
-      postgres:
-        image: postgres:latest
-        # `POSTGRES_HOST` is `postgres`
-        env:
-          POSTGRES_DB: carbonlink
-          POSTGRES_PASSWORD: password
-          # optional (defaults to `5432`)
-          POSTGRES_PORT: 5432
-          # optional (defaults to `postgres`)
-          POSTGRES_USER: postgres
-        ports:
-          - 5432:5432
-        # set health checks to wait until postgres has started
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
+
     name: Run unit tests
     steps:
     - uses: actions/checkout@v2
+    - name: 'Create .env file'
+      run: |
+        touch .env
+        echo ENVIRONMENT=${{ secrets.ENVIRONMENT }} >> .env
+        echo HOSTNAME=${{ secrets.HOSTNAME }} >> .env
+        echo PORT=${{ secrets.APP_PORT }} >> .env
+        echo DATABASE_NAME=${{ secrets.DATABASE_NAME }} >> .env
+        echo DBUSER=${{ secrets.DBUSER }} >> .env
+        echo DBPASSWORD=${{ secrets.DBPASSWORD }} >> .env
     - name: Use Node.js ${{ matrix.node-version }}
       uses: actions/setup-node@v2
       with:
