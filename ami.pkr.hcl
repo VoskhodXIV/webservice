@@ -28,7 +28,7 @@ variable "ssh_username" {
 variable "subnet_id" {
   type        = string
   description = "Subnet of the default VPC."
-  default     = "subnet-04e6d89fec933bc43"
+  default     = "subnet-02d048c354c2eb869"
 }
 
 variable "ubuntu_version" {
