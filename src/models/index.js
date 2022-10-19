@@ -22,7 +22,7 @@ db.connectionTest = async (req, res) => {
     await sequelize.authenticate()
     console.log(`Successfully connected to database "${dbConfig.DB}"`)
   } catch (error) {
-    console.error(`Unable to connect to the database "${dbConfig.DB}":`, error)
+    console.error(`No connection to the database "${dbConfig.DB}"`)
   }
 }
 

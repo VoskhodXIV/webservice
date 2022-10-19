@@ -1,7 +1,9 @@
+require('dotenv').config()
 const express = require('express')
 const logger = require('morgan')
 const helmet = require('helmet')
 
+const { ENVIRONMENT, PORT, HOSTNAME } = process.env
 const app = express()
 
 const { userRoutes, healthz } = require('./src/routes/index.routes')
@@ -14,13 +16,15 @@ app.use(express.json())
 app.use('/', healthz)
 app.use('/', userRoutes)
 
-db.connectionTest()
-db.sequelize.sync()
+if (ENVIRONMENT === 'dev') {
+  db.connectionTest()
+  db.sequelize.sync()
+} else if (ENVIRONMENT === 'prod') {
+  db.sequelize.sync()
+}
 
-const PORT = 1337
-
-app.listen(PORT, () => {
-  console.log(`Server running at http://localhost:${PORT}`)
+app.listen(PORT, HOSTNAME, () => {
+  console.log(`Server running at http://${HOSTNAME}:${PORT}`)
 })
 
 module.exports = app
