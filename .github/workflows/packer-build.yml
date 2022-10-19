@@ -1,4 +1,4 @@
-name: Web Service Continuous Integration
+name: Packer custom AMI deployment to AWS Prod
 
 env:
   ARTIFACT_NAME: webapp
@@ -29,7 +29,7 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
       - run: yarn
-      - run: yarn start
+      - run: yarn test
   # Packer init, validate and build
   packer:
     needs: tests
