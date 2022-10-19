@@ -2,7 +2,6 @@ name: Web Service Continuous Integration
 
 env:
   ARTIFACT_NAME: webapp
-  AWS_REGION: us-west-1
 
 on:
   push:
