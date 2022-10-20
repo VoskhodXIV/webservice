@@ -130,7 +130,7 @@ echo "+-------------------------------------------------------------------------
 #   export $line
 # done
 cd webapp && yarn && yarn test
-sudo cp ~/webapp/nodeserver.service /lib/systemd/system/
+sudo cp ~/webapp/nodeserver.service /lib/systemd/system/nodeserver.service
 
 # echo "+-----------------------------------------------------------------------------------------------------------------------------------------+"
 # echo "|                                                                                                                                         |"

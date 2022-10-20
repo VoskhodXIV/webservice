@@ -28,7 +28,7 @@ variable "ssh_username" {
 variable "subnet_id" {
   type        = string
   description = "Subnet of the default VPC."
-  default     = "subnet-02d048c354c2eb869"
+  default     = "subnet-03d1bcaedaf95a150"
 }
 
 variable "ubuntu_version" {
@@ -55,7 +55,7 @@ source "amazon-ebs" "ec2" {
   ami_description = "EC2 AMI for CSYE 6225 built by ${data.git-commit.cwd-head.author}"
   ami_users = [
     "057919684206", # dev account ID
-    "235271618064"  # prod account ID
+    "235271618064", # prod account ID
   ]
   tags = {
     Name        = "EC2-AMI-${local.version}"
