@@ -24,8 +24,8 @@ jobs:
         touch .env
         echo ENVIRONMENT=${{ secrets.ENVIRONMENT }} >> .env
         echo HOSTNAME=${{ secrets.HOSTNAME }} >> .env
-        echo PORT=${{ secrets.APP_PORT }} >> .env
-        echo DATABASE_NAME=${{ secrets.DATABASE_NAME }} >> .env
+        echo PORT=${{ secrets.PORT }} >> .env
+        echo DATABASE=${{ secrets.DATABASE }} >> .env
         echo DBUSER=${{ secrets.DBUSER }} >> .env
         echo DBPASSWORD=${{ secrets.DBPASSWORD }} >> .env
     - name: Use Node.js ${{ matrix.node-version }}
