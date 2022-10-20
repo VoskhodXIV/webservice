@@ -58,7 +58,7 @@ To run the server in `dev` mode, run the following command:
 
 ### :busstop: API Endpoints
 
-This cloud-native web appilcation RESTful API mirror the API mentioned in the [Swwagger Docs here](https://app.swaggerhub.com/apis-docs/fall2022-csye6225/cloud-native-webapp/assignment-02#/Account).
+This cloud-native web application RESTful API mirror the API mentioned in the [Swagger Docs here](https://app.swaggerhub.com/apis-docs/fall2022-csye6225/cloud-native-webapp/assignment-02#/Account).
 
 #### :closed_lock_with_key: Authenticated Users
 
@@ -228,7 +228,39 @@ Install application prerequisites, middlewares and runtime dependencies here. Up
 
 `systemd` s a suite of basic building blocks for a Linux system. It provides a system and service manager that runs as PID 1 and starts the rest of the system.. This will help us bootstrap our application and have it in a running state when we launch our custom AMI EC2 instance using the CloudFormation stack.
 
-## :octocat: CI/CD pipelines
+#### Custom AMI creation
+
+To create the custom AMI from the `.pkr.hcl` template created earlier, use the commands given below:
+
+- If you're using Packer plugins , run the `init` command first:
+
+```shell
+# Installs all packer plugins mentioned in the config template
+packer init .
+```
+
+- To format the template, use:
+
+```shell
+packer fmt .
+```
+
+- To validate the template, use:
+
+```shell
+# to validate syntax only
+packer validate -syntax-only .
+# to validate the template as a whole
+packer validate .
+```
+
+- To build the custom AMI using packer, use:
+
+```shell
+packer build <filename>.pkr.hcl
+```
+
+## :arrows_clockwise: CI/CD pipelines
 
 ### Validate template
 
@@ -237,6 +269,8 @@ Validate the packer template when a pull request is opened. The PR status checks
 ### Build AMI
 
 The AMI should be built when the PR is merged. The ami should be shared with the AWS `prod` account automatically. [This can be done by providing the AWS account ID in the packer template, [see here](https://developer.hashicorp.com/packer/plugins/builders/amazon/ebs#ami_users)].
+
+Create the `.env` file on the fly, when unpacking artifacts! You will need to declare the environment secrets in the organization secrets, and read them during the CI/CD workflow.
 
 ## :ninja: Author
 
