@@ -91,8 +91,13 @@ build {
 
   # https://www.packer.io/docs/provisioners/file#uploading-files-that-don-t-exist-before-packer-starts
   provisioner "file" {
-    source      = "webapp.zip"   # path in local system to a tar.gz file
-    destination = "~/webapp.zip" # path in the AMI to store the webapp
+    source      = "webapp.zip"              # path in local system to a tar.gz file
+    destination = "/home/ubuntu/webapp.zip" # path in the AMI to store the webapp
+  }
+
+  provisioner "file" {
+    source      = "nodeserver.service"              # path in local system to a tar.gz file
+    destination = "/home/ubuntu/nodeserver.service" # path in the AMI to store the webapp
   }
 
   provisioner "shell" {
@@ -102,6 +107,7 @@ build {
     ]
     scripts = [
       "install.sh",
+      "post-install.sh",
     ]
   }
 }
