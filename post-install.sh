@@ -15,9 +15,9 @@ echo "+-------------------------------------------------------------------------
 sudo cp /home/ubuntu/nodeserver.service /lib/systemd/system/nodeserver.service
 echo "Starting the REST API Service"
 sudo systemctl daemon-reload
+sudo systemctl enable nodeserver
 sudo systemctl start nodeserver
 sudo systemctl status nodeserver
-sudo systemctl enable nodeserver
 APISRVC=$?
 if [ $APISRVC -eq 0 ]; then
   echo "API service is running successfully!"
