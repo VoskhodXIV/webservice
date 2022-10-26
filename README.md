@@ -1,6 +1,6 @@
 # :spider_web: webapp
 
-[![Run unit test suite](https://github.com/ArtemisIX/webapp/actions/workflows/test-suite.yml/badge.svg)](https://github.com/ArtemisIX/webapp/actions/workflows/test-suite.yml)
+[![Packer custom AMI deployment to AWS Prod](https://github.com/ArtemisIX/webapp/actions/workflows/packer-build.yml/badge.svg)](https://github.com/ArtemisIX/webapp/actions/workflows/packer-build.yml)
 
 RESTful Backend API service for a web application.
 
