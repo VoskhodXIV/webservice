@@ -4,7 +4,7 @@
 
 RESTful Backend API service for a web application.
 
-Demo API for reference: [Swaggerhub](https://app.swaggerhub.com/apis-docs/fall2022-csye6225/cloud-native-webapp/assignment-01)
+Demo API for reference: [Swaggerhub](https://app.swaggerhub.com/apis-docs/fall2022-csye6225/cloud-native-webapp/assignment-05)
 
 ## :package: Prerequisites
 
@@ -103,7 +103,77 @@ This cloud-native web application RESTful API mirror the API mentioned in the [S
   - **Response:** 201 _User Created_
   - **Response** 400 _Bad Request_
 
+#### :clipboard: Upload Documents
+
+- `**GET** _/v1/documents_ : Get all documents uploaded by authenticated user
+
+  - **Response:** 200 _OK_
+
+  ```json
+    [
+      {
+        "doc_id": "d290f1ee-6c54-4b01-90e6-d701748f0851",
+        "user_id": "d290f1ee-6c54-4b01-90e6-d701748f0851",
+        "name": "string",
+        "date_created": "2016-08-29T09:12:33.001Z",
+        "s3_bucket_path": "string"
+      }
+    ]
+  ```
+
+  - **Response** 401 _Unauthorized_
+  - **Response** 403 _Forbidden_
+
+- **POST** _/v1/documents_ : Upload a document
+  - **Request Body:**
+    - file: _string_
+    - fileType: _object_
+
+  - **Response** 201 _File Uploaded_
+
+    ```json
+      [
+        {
+            "doc_id": "d290f1ee-6c54-4b01-90e6-d701748f0851",
+            "user_id": "d290f1ee-6c54-4b01-90e6-d701748f0851",
+            "name": "string",
+            "date_created": "2016-08-29T09:12:33.001Z",
+            "s3_bucket_path": "string"
+        }
+      ]
+    ```
+
+  - **Response** 400 _Bad Request_
+  - **Response** 401 _Unauthorized_
+
+- **GET** _/v1/account/{docID}_: Get document details for authorized user
+  - **docID:** String (Required), type: UUID format
+  - **Response:** 200 _OK_
+
+  ```json
+    [
+      {
+        "doc_id": "d290f1ee-6c54-4b01-90e6-d701748f0851",
+        "user_id": "d290f1ee-6c54-4b01-90e6-d701748f0851",
+        "name": "string",
+        "date_created": "2016-08-29T09:12:33.001Z",
+        "s3_bucket_path": "string"
+      }
+    ]
+  ```
+
+  - **Response** 401 _Unauthorized_
+  - **Response** 403 _Forbidden_
+
+- **DELETE** _/v1/account/{docID}_: Delete the document for authorized user
+  - **docID:** String (Required), type: UUID format
+  - **Response:** 204 _No Content_
+  - **Response** 401 _Unauthorized_
+  - **Response** 403 _Forbidden_
+
 #### Schemas
+
+`Account`
 
 ```text
   {
@@ -124,6 +194,26 @@ This cloud-native web application RESTful API mirror the API mentioned in the [S
       readOnly: true
     account_updated: string($date-time)
       example: 2016-08-29T09:12:33.001Z
+      readOnly: true
+  }
+```
+
+`Document`
+
+```text
+  {
+    doc_id: string($uuid)
+      example: d290f1ee-6c54-4b01-90e6-d701748f0851
+      readOnly: true
+    user_id: string($uuid)
+      example: d290f1ee-6c54-4b01-90e6-d701748f0851
+      readOnly: true
+    name: string
+      readOnly: true
+    date_created: string($datetime)
+      example: 2016-08-29T09:12:33.001Z
+      readOnly: true
+    s3_bucket_path: string
       readOnly: true
   }
 ```
@@ -271,6 +361,10 @@ Validate the packer template when a pull request is opened. The PR status checks
 The AMI should be built when the PR is merged. The ami should be shared with the AWS `prod` account automatically. [This can be done by providing the AWS account ID in the packer template, [see here](https://developer.hashicorp.com/packer/plugins/builders/amazon/ebs#ami_users)].
 
 Create the `.env` file on the fly, when unpacking artifacts! You will need to declare the environment secrets in the organization secrets, and read them during the CI/CD workflow.
+
+## :warning: IMPORTANT
+
+To test the application locally, you will need to use the `.env.test` dotenv configuration. To run the application locally, create a new `.env` referring to the `.env.test` dotenv configuration.
 
 ## :ninja: Author
 

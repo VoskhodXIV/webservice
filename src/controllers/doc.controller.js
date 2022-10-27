@@ -22,7 +22,7 @@ const uploadDoc = async (req, res) => {
     })
     const { id } = userData
     if (req.files.length === 0)
-      return res.status(400).send('check the file to upload!')
+      return res.status(400).send({ message: 'check the file to upload!' })
     const file = req.files[0].originalname
     const exists = await Document.findOne({
       where: {
@@ -30,13 +30,11 @@ const uploadDoc = async (req, res) => {
       },
     })
     if (exists) {
-      return res.status(400).send('file already exists!')
+      return res.status(400).send({ message: 'file already exists!' })
     }
     const results = await s3Uploadv2(req.files)
     if (results.length === 0)
-      return res
-        .status(400)
-        .send({ status: 'Bad request, check files to upload!!!' })
+      return res.status(400).send({ message: 'check the file to upload!' })
     const documents = results.map((result) => {
       return Document.build({
         doc_id: uuidv4(),
@@ -49,14 +47,14 @@ const uploadDoc = async (req, res) => {
     try {
       await documents.map((document) => document.save())
     } catch (err) {
-      return res.status(500).send({ message: 'Internal error' })
+      return res.status(500).send({ message: 'Internal server error' })
     }
     return res.status(201).json(documents)
   } catch (err) {
     console.log(err)
     return res
       .status(400)
-      .send({ status: 'Bad Request, check file to upload!' })
+      .send({ message: 'Bad Request, check the file to upload!' })
   }
 }
 
@@ -86,7 +84,7 @@ const listDocs = async (req, res) => {
     return res.status(201).json(result)
   } catch (err) {
     console.log(err)
-    return res.status(400).send({ status: 'Bad Request' })
+    return res.status(400).send({ message: 'Bad Request' })
   }
 }
 
@@ -103,16 +101,16 @@ const getDocumentDetails = async (req, res) => {
       /^[0-9A-F]{8}-[0-9A-F]{4}-[4][0-9A-F]{3}-[89AB][0-9A-F]{3}-[0-9A-F]{12}$/i.test(
         doc_id
       )
-    if (!validDocID) return res.status(403).send('Forbidden')
+    if (!validDocID)
+      return res.status(403).send({ message: 'check the document ID' })
     const document = await Document.findByPk(doc_id)
-    if (document === null)
-      return res.status(200).send({ message: 'Not Found!' })
+    if (document === null) return res.status(200).send(document)
     const { user_id } = document
     if (id === user_id) return res.status(200).send(document)
     return res.status(401).send({ message: 'Unauthorized' })
   } catch (err) {
     console.log(err)
-    return res.status(400).send({ status: 'Bad Request' })
+    return res.status(400).send({ message: 'Bad Request' })
   }
 }
 
@@ -129,7 +127,8 @@ const deleteDoc = async (req, res) => {
       /^[0-9A-F]{8}-[0-9A-F]{4}-[4][0-9A-F]{3}-[89AB][0-9A-F]{3}-[0-9A-F]{12}$/i.test(
         doc_id
       )
-    if (!validDocID) return res.status(403).send('Forbidden')
+    if (!validDocID)
+      return res.status(403).send({ message: 'check the document ID' })
     const document = await Document.findByPk(doc_id)
     if (document === null)
       return res.status(404).send({ message: 'Not Found!' })
@@ -143,12 +142,12 @@ const deleteDoc = async (req, res) => {
       }
     } catch (err) {
       console.log(err)
-      return res.status(500).send({ status: 'Internal server error!' })
+      return res.status(500).send({ message: 'Internal server error!' })
     }
     return res.status(204).send()
   } catch (err) {
     console.log(err)
-    return res.status(400).send({ status: 'Bad Request!' })
+    return res.status(400).send({ message: 'Bad Request!' })
   }
 }
 module.exports = {
