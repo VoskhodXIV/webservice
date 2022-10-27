@@ -15,9 +15,9 @@ const auth = require('../middlewares/auth')
 
 const upload = multer({
   storage,
-  limits: { fileSize: MAX_SIZE },
+  limits: { fileSize: MAX_SIZE, files: 1 },
 })
-router.post('/v1/documents/', auth, upload.any('document'), uploadDoc)
+router.post('/v1/documents/', auth, upload.array('document'), uploadDoc)
 router.get('/v1/documents/', auth, listDocs)
 router.get('/v1/documents/:doc_id', auth, getDocumentDetails)
 router.delete('/v1/documents/:doc_id', auth, deleteDoc)
