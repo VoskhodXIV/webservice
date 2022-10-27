@@ -76,21 +76,21 @@ if [ $PSQLSRVC -eq 0 ]; then
 else
   echo "Unable to start the PostgreSQL Service"
 fi
-echo "+-----------------------------------------------------------------------------------------------------------------------------------------+"
-echo "|                                                                                                                                         |"
-echo "|                                                     Boostrapping PostgreSQL database                                                    |"
-echo "|                                                                                                                                         |"
-echo "+-----------------------------------------------------------------------------------------------------------------------------------------+"
-sudo su postgres <<EOF
-createdb test;
-psql -c "CREATE ROLE me WITH LOGIN PASSWORD 'password';"
-EOF
-BOOTPSQL=$?
-if [ $BOOTPSQL -eq 0 ]; then
-  echo "Postgres User 'me' and database 'test' created successfully!"
-else
-  echo "Unable to Boostrap the PostgreSQL database"
-fi
+# echo "+-----------------------------------------------------------------------------------------------------------------------------------------+"
+# echo "|                                                                                                                                         |"
+# echo "|                                                     Boostrapping PostgreSQL database                                                    |"
+# echo "|                                                                                                                                         |"
+# echo "+-----------------------------------------------------------------------------------------------------------------------------------------+"
+# sudo su postgres <<EOF
+# createdb test;
+# psql -c "CREATE ROLE me WITH LOGIN PASSWORD 'password';"
+# EOF
+# BOOTPSQL=$?
+# if [ $BOOTPSQL -eq 0 ]; then
+#   echo "Postgres User 'me' and database 'test' created successfully!"
+# else
+#   echo "Unable to Boostrap the PostgreSQL database"
+# fi
 
 echo "+-----------------------------------------------------------------------------------------------------------------------------------------+"
 echo "|                                                                                                                                         |"
@@ -123,10 +123,7 @@ sudo rm -rf /home/ubuntu/webapp.zip
 sleep 3
 echo "+-----------------------------------------------------------------------------------------------------------------------------------------+"
 echo "|                                                                                                                                         |"
-echo "|                                               Installing app dependencies & running unit tests                                          |"
+echo "|                                                         Installing app dependencies                                                     |"
 echo "|                                                                                                                                         |"
 echo "+-----------------------------------------------------------------------------------------------------------------------------------------+"
-# cat .env | while read line; do
-#   export $line
-# done
-cd webapp && yarn && yarn test
+cd webapp && yarn

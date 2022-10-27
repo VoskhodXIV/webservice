@@ -12,7 +12,7 @@ To install and run the app locally, you need to have the following installed on 
 
 - `git` (configured with ssh) [[link](https://git-scm.com/downloads)]
 - `node v.16.17.0` and above [[link](https://nodejs.org/en/download/)]
-- `yarn` (package manager) [[link]((https://formulae.brew.sh/formula/yarn))]
+- `yarn` (package manager) [[link](https://formulae.brew.sh/formula/yarn)]
 - `Postman` to demo hit the APIs [[link](https://www.postman.com/downloads/)]
 -
 
@@ -54,7 +54,7 @@ To run the server in `dev` mode, run the following command:
   npm run start:dev
 ```
 
-> This serves the app on `localhost:3000` via the unless you specify a `PORT` number in the .env file.
+> This serves the app on `http://0.0.0.0:1337` unless you specify a `PORT` number in the .env file.
 
 ### :busstop: API Endpoints
 

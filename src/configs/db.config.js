@@ -1,19 +1,10 @@
+require('dotenv').config()
+
 module.exports = {
-  HOST: process.env.DBHOST,
+  HOSTNAME: process.env.HOSTNAME,
   USER: process.env.DBUSER,
   PASSWORD: process.env.DBPASSWORD,
+  PORT: process.env.PORT,
   DB: process.env.DATABASE,
-  dialect: 'postgres',
-  pool: {
-    max: 5,
-    min: 0,
-    acquire: 30000,
-    idle: 20000,
-  },
-  dialectOptions: {
-    useUTC: false,
-    dateStrings: true,
-    typeCast: true,
-  },
   timezone: '-05:00',
 }

@@ -16,5 +16,6 @@ module.exports = {
     'new-cap': 'off',
     'consistent-return': 'off',
     'comma-dangle': 'off',
+    camelcase: 'off',
   },
 }

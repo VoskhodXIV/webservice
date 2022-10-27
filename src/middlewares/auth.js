@@ -50,7 +50,9 @@ module.exports = (req, res, next) => {
         } else {
           const { id } = result
           if (req.body.username) {
-            res.status(400).send()
+            res
+              .status(400)
+              .send({ message: 'User should not update username!' })
             return
           }
           if (req.body.account_created) {
@@ -67,7 +69,6 @@ module.exports = (req, res, next) => {
             username: req.body.username,
             password: hash,
           }
-          console.log('Update User Data', updateUser)
           User.update(updateUser, {
             where: {
               id: result.id,

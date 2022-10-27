@@ -2,9 +2,13 @@ const bcrypt = require('bcrypt')
 const SDCClient = require('statsd-client')
 
 const db = require('../models/index')
+const dbConfig = require('../configs/db.config')
 
 const User = db.users
-const sdcclient = new SDCClient({ host: 'localhost', port: 1337 })
+const sdcclient = new SDCClient({
+  host: dbConfig.HOSTNAME,
+  port: dbConfig.PORT,
+})
 
 exports.createUser = (req, res) => {
   // Validate request
@@ -44,7 +48,6 @@ exports.createUser = (req, res) => {
       }
       User.create(userObject)
         .then((data) => {
-          console.log(data.id)
           const dataNew = {
             id: data.id,
             first_name: req.body.first_name,
@@ -104,7 +107,6 @@ exports.updateUserData = (req, res) => {
         username: req.body.username,
         password: hash,
       }
-      console.log('UserData', userUpdate)
       User.update(userUpdate, {
         where: { id: result.id },
       })

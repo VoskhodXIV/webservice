@@ -5,7 +5,7 @@ After=network.target
 [Service]
 Type=simple
 User=ubuntu
-ExecStart=node /home/ubuntu/webapp/app.js
+ExecStart=/usr/bin/node /home/ubuntu/webapp/app.js
 EnvironmentFile=/home/ubuntu/webapp/.env
 Restart=on-failure
 
