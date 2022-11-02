@@ -2,7 +2,7 @@
 
 [![Packer custom AMI deployment to AWS Prod](https://github.com/ArtemisIX/webapp/actions/workflows/packer-build.yml/badge.svg)](https://github.com/ArtemisIX/webapp/actions/workflows/packer-build.yml)
 
-RESTful Backend API service for a web application.
+RESTful Backend API service for a fullstack web application.
 
 Demo API for reference: [Swaggerhub](https://app.swaggerhub.com/apis-docs/fall2022-csye6225/cloud-native-webapp/assignment-05)
 
