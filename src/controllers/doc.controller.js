@@ -27,6 +27,7 @@ const uploadDoc = async (req, res) => {
     const exists = await Document.findOne({
       where: {
         name: file,
+        user_id: id,
       },
     })
     if (exists) {
