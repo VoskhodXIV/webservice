@@ -1,19 +1,27 @@
 const { v4: uuidv4 } = require('uuid')
 
-const SDCClient = require('statsd-client')
+const statsd = require('node-statsd')
 const dbConfig = require('../configs/db.config')
 const { s3Uploadv2, s3Deletev2 } = require('../middlewares/s3Util')
 const db = require('../models')
+const logger = require('../configs/logger.config')
 
 const User = db.users
 const Document = db.document
 
-const sdcclient = new SDCClient({
-  host: dbConfig.HOSTNAME,
-  port: dbConfig.PORT,
+const client = new statsd({
+  host: dbConfig.METRICS_HOSTNAME,
+  port: dbConfig.METRICS_PORT,
 })
 
 const uploadDoc = async (req, res) => {
+  client.increment('endpoint.upload.documents')
+  const { protocol, method, hostname, originalUrl } = req
+  const headers = { ...req.headers }
+  const metaData = { protocol, method, hostname, originalUrl, headers }
+  logger.info(`Requesting ${method} ${protocol}://${hostname}${originalUrl}`, {
+    metaData,
+  })
   try {
     const userData = await User.findOne({
       where: {
@@ -34,8 +42,15 @@ const uploadDoc = async (req, res) => {
       return res.status(400).send({ message: 'file already exists!' })
     }
     const results = await s3Uploadv2(req.files)
-    if (results.length === 0)
+    if (results.length === 0) {
+      logger.warn(
+        `Bad Request ${method} ${protocol}://${hostname}${originalUrl}`,
+        {
+          metaData,
+        }
+      )
       return res.status(400).send({ message: 'check the file to upload!' })
+    }
     const documents = results.map((result) => {
       return Document.build({
         doc_id: uuidv4(),
@@ -52,7 +67,12 @@ const uploadDoc = async (req, res) => {
     }
     return res.status(201).json(documents)
   } catch (err) {
-    console.log(err)
+    logger.warn(
+      `Bad Request ${method} ${protocol}://${hostname}${originalUrl}`,
+      {
+        metaData,
+      }
+    )
     return res
       .status(400)
       .send({ message: 'Bad Request, check the file to upload!' })
@@ -60,6 +80,13 @@ const uploadDoc = async (req, res) => {
 }
 
 const listDocs = async (req, res) => {
+  client.increment('endpoint.fetch.documents')
+  const { protocol, method, hostname, originalUrl } = req
+  const headers = { ...req.headers }
+  const metaData = { protocol, method, hostname, originalUrl, headers }
+  logger.info(`Requesting ${method} ${protocol}://${hostname}${originalUrl}`, {
+    metaData,
+  })
   try {
     const userData = await User.findOne({
       where: {
@@ -84,12 +111,24 @@ const listDocs = async (req, res) => {
     })
     return res.status(201).json(result)
   } catch (err) {
-    console.log(err)
+    logger.warn(
+      `Bad Request ${method} ${protocol}://${hostname}${originalUrl}`,
+      {
+        metaData,
+      }
+    )
     return res.status(400).send({ message: 'Bad Request' })
   }
 }
 
 const getDocumentDetails = async (req, res) => {
+  client.increment('endpoint.describe.document')
+  const { protocol, method, hostname, originalUrl } = req
+  const headers = { ...req.headers }
+  const metaData = { protocol, method, hostname, originalUrl, headers }
+  logger.info(`Requesting ${method} ${protocol}://${hostname}${originalUrl}`, {
+    metaData,
+  })
   try {
     const userData = await User.findOne({
       where: {
@@ -110,12 +149,24 @@ const getDocumentDetails = async (req, res) => {
     if (id === user_id) return res.status(200).send(document)
     return res.status(401).send({ message: 'Unauthorized' })
   } catch (err) {
-    console.log(err)
+    logger.warn(
+      `Bad Request ${method} ${protocol}://${hostname}${originalUrl}`,
+      {
+        metaData,
+      }
+    )
     return res.status(400).send({ message: 'Bad Request' })
   }
 }
 
 const deleteDoc = async (req, res) => {
+  client.increment('endpoint.delete.document')
+  const { protocol, method, hostname, originalUrl } = req
+  const headers = { ...req.headers }
+  const metaData = { protocol, method, hostname, originalUrl, headers }
+  logger.info(`Requesting ${method} ${protocol}://${hostname}${originalUrl}`, {
+    metaData,
+  })
   try {
     const userData = await User.findOne({
       where: {
@@ -142,12 +193,16 @@ const deleteDoc = async (req, res) => {
         return res.status(401).send({ message: 'Unauthorized!' })
       }
     } catch (err) {
-      console.log(err)
       return res.status(500).send({ message: 'Internal server error!' })
     }
     return res.status(204).send()
   } catch (err) {
-    console.log(err)
+    logger.warn(
+      `Bad Request ${method} ${protocol}://${hostname}${originalUrl}`,
+      {
+        metaData,
+      }
+    )
     return res.status(400).send({ message: 'Bad Request!' })
   }
 }

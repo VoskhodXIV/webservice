@@ -1,20 +1,23 @@
 const bcrypt = require('bcrypt')
-const SDCClient = require('statsd-client')
-
+const statsd = require('node-statsd')
+const logger = require('../configs/logger.config')
 const db = require('../models/index')
 const dbConfig = require('../configs/db.config')
 
 const User = db.users
-const sdcclient = new SDCClient({
-  host: dbConfig.HOSTNAME,
-  port: dbConfig.PORT,
+const client = new statsd({
+  host: dbConfig.METRICS_HOSTNAME,
+  port: dbConfig.METRICS_PORT,
 })
 
-exports.createUser = (req, res) => {
-  // Validate request
-  sdcclient.increment('Creating user')
-  const startTime = new Date()
-
+const createUser = (req, res) => {
+  client.increment('endpoint.create.user')
+  const { protocol, method, hostname, originalUrl } = req
+  const headers = { ...req.headers }
+  const metaData = { protocol, method, hostname, originalUrl, headers }
+  logger.info(`Requesting ${method} ${protocol}://${hostname}${originalUrl}`, {
+    metaData,
+  })
   if (!req.body.first_name) {
     res.status(400).send()
     return
@@ -56,7 +59,6 @@ exports.createUser = (req, res) => {
             account_created: data.account_created,
             account_updated: data.account_updated,
           }
-
           res.status(201).send({ dataNew })
         })
         .catch((err) => {
@@ -64,13 +66,16 @@ exports.createUser = (req, res) => {
         })
     }
   })
-  const endTime = new Date()
-  sdcclient.timing('User creation time', endTime - startTime)
 }
 
-exports.updateUserData = (req, res) => {
-  sdcclient.increment('Updating User')
-  const startTime = new Date()
+const updateUserData = (req, res) => {
+  client.increment('endpoint.update.user')
+  const { protocol, method, hostname, originalUrl } = req
+  const headers = { ...req.headers }
+  const metaData = { protocol, method, hostname, originalUrl, headers }
+  logger.info(`Requesting ${method} ${protocol}://${hostname}${originalUrl}`, {
+    metaData,
+  })
   bcrypt.hash(req.body.password, 10, (err, hash) => {
     if (err) {
       res.status(400).json({
@@ -91,7 +96,7 @@ exports.updateUserData = (req, res) => {
       }
       if (req.body.account_created) {
         res.status(400).send({
-          message: 'account_Created cannot be updated',
+          message: 'account_created cannot be updated',
         })
         return
       }
@@ -116,32 +121,52 @@ exports.updateUserData = (req, res) => {
               message: 'User was updated successfully!',
             })
           } else {
+            logger.warn(
+              `Bad Request ${method} ${protocol}://${hostname}${originalUrl}`,
+              {
+                metaData,
+              }
+            )
             res.status(400).send({
               message: `Cannot update user with id=${id}. Request body is empty or user was not found!`,
             })
           }
         })
         .catch((err) => {
+          logger.warn(
+            `Internal Server Error ${method} ${protocol}://${hostname}${originalUrl}`,
+            {
+              metaData,
+            }
+          )
           res.status(500).send({
             message: `Error updating user with id=${id}`,
           })
         })
     }
   })
-  const endTime = new Date()
-  sdcclient.timing('User update time', endTime - startTime)
 }
 
-exports.fetchUserData = async (req, res) => {
-  sdcclient.increment('Fetching user data')
-  const startTime = new Date()
+const fetchUserData = async (req, res) => {
+  client.increment('endpoint.fetch.user')
+  const { protocol, method, hostname, originalUrl } = req
+  const headers = { ...req.headers }
+  const metaData = { protocol, method, hostname, originalUrl, headers }
+  logger.info(`Requesting ${method} ${protocol}://${hostname}${originalUrl}`, {
+    metaData,
+  })
   const result = await User.findOne({
     where: {
       username: global.username,
     },
   })
-  const endTime = new Date()
-  sdcclient.timing('Get user data time', endTime - startTime)
+  if (!result.id)
+    logger.warn(
+      `User ID not valid ${method} ${protocol}://${hostname}${originalUrl}`,
+      {
+        metaData,
+      }
+    )
   res.status(200).send({
     id: result.id,
     first_name: result.first_name,
@@ -150,4 +175,10 @@ exports.fetchUserData = async (req, res) => {
     account_created: result.account_created,
     account_updated: result.account_updated,
   })
+}
+
+module.exports = {
+  createUser,
+  updateUserData,
+  fetchUserData,
 }

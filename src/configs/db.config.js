@@ -6,5 +6,12 @@ module.exports = {
   PASSWORD: process.env.DBPASSWORD,
   PORT: process.env.PORT,
   DB: process.env.DATABASE,
-  timezone: '-05:00',
+  dialectOptions: {
+    ssl: {
+      require: true,
+      rejectUnauthorized: false,
+    },
+  },
+  METRICS_HOSTNAME: 'localhost',
+  METRICS_PORT: 8125,
 }

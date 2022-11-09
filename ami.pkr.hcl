@@ -40,7 +40,7 @@ variable "ubuntu_version" {
 locals {
   truncated_sha = substr(data.git-commit.cwd-head.hash, 0, 8)
   version       = data.git-repository.cwd.head == "master" && data.git-repository.cwd.is_clean ? var.ubuntu_version : "${var.ubuntu_version}-${local.truncated_sha}"
-  timestamp     = regex_replace(timestamp(), "[- TZ:]", "")
+  timestamp     = substr(regex_replace(timestamp(), "[- TZ:]", ""), 8, 13)
 }
 
 data "git-repository" "cwd" {}
@@ -106,8 +106,8 @@ build {
       "CHECKPOINT_DISABLE=1"
     ]
     scripts = [
-      "install.sh",
-      "post-install.sh",
+      "./scripts/install.sh",
+      "./scripts/post-install.sh",
     ]
   }
 }

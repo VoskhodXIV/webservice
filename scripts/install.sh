@@ -114,6 +114,27 @@ which psql
 
 echo "+-----------------------------------------------------------------------------------------------------------------------------------------+"
 echo "|                                                                                                                                         |"
+echo "|                                                        Installing AWS Cloudwatch Agent                                                  |"
+echo "|                                                                                                                                         |"
+echo "+-----------------------------------------------------------------------------------------------------------------------------------------+"
+wget https://s3.amazonaws.com/amazoncloudwatch-agent/ubuntu/amd64/latest/amazon-cloudwatch-agent.deb
+AWSCLDWTCH=$?
+if [ $AWSCLDWTCH -eq 0 ]; then
+  sleep 5
+  echo "Successfully downloaded Amazon Cloudwatch Agent"
+  sudo dpkg -i -E ./amazon-cloudwatch-agent.deb
+  INSTALLAGENT=$?
+  if [ $INSTALLAGENT -eq 0 ]; then
+    echo "Installed Amazon Cloudwatch Agent"
+  else
+    echo "Unable to install Amazon Cloudwatch Agent"
+  fi
+else
+  echo "Unable to download the Amazon Cloudwatch Agent"
+fi
+
+echo "+-----------------------------------------------------------------------------------------------------------------------------------------+"
+echo "|                                                                                                                                         |"
 echo "|                                                            Unpacking Artifacts                                                          |"
 echo "|                                                                                                                                         |"
 echo "+-----------------------------------------------------------------------------------------------------------------------------------------+"
@@ -127,3 +148,15 @@ echo "|                                                         Installing app d
 echo "|                                                                                                                                         |"
 echo "+-----------------------------------------------------------------------------------------------------------------------------------------+"
 cd webapp && yarn
+
+echo "+-----------------------------------------------------------------------------------------------------------------------------------------+"
+echo "|                                                                                                                                         |"
+echo "|                                                       Configuring AWS Cloudwatch Agent                                                  |"
+echo "|                                                                                                                                         |"
+echo "+-----------------------------------------------------------------------------------------------------------------------------------------+"
+#sudo /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -a fetch-config -m ec2 -c file:/opt/cloudwatch-config.json -s
+sudo /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl \
+  -a fetch-config \
+  -m ec2 \
+  -c file:/home/ubuntu/webapp/src/configs/cloudwatch.config.json \
+  -s

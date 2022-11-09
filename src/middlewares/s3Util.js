@@ -1,17 +1,9 @@
 require('dotenv').config()
 const multer = require('multer')
 const { S3 } = require('aws-sdk')
-const SDC = require('statsd-client')
 const db = require('../models')
-const dbConfig = require('../configs/db.config')
-
-const sdc = new SDC({
-  host: dbConfig.HOSTNAME,
-  port: dbConfig.PORT,
-})
 
 const User = db.users
-const Document = db.document
 
 /**
  * Multer memory storage
@@ -45,22 +37,6 @@ const s3Uploadv2 = async (files) => {
   return res
 }
 
-// const s3CheckDocv2 = async (fileName) => {
-//   const s3 = new S3()
-//   const userData = await User.findOne({
-//     where: {
-//       username: global.username,
-//     },
-//   })
-//   const { id } = userData
-//   const param = {
-//     Bucket: process.env.AWS_BUCKET_NAME,
-//     Key: `${id}/${fileName}`,
-//   }
-//   const res = await s3.deleteObject(param).promise()
-//   return res
-// }
-
 const s3Deletev2 = async (fileName) => {
   const s3 = new S3()
   const userData = await User.findOne({
@@ -81,5 +57,4 @@ module.exports = {
   storage,
   s3Uploadv2,
   s3Deletev2,
-  // s3CheckDocv2,
 }

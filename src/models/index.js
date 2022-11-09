@@ -7,12 +7,7 @@ const sequelize = new Sequelize(dbConfig.DB, dbConfig.USER, dbConfig.PASSWORD, {
   host: dbConfig.HOSTNAME,
   port: 5432,
   dialect: 'postgres',
-  dialectOptions: {
-    ssl: {
-      require: true,
-      rejectUnauthorized: false,
-    },
-  },
+  dialectOptions: dbConfig.dialectOptions,
   logging: false,
 })
 
@@ -23,5 +18,14 @@ db.sequelize = sequelize
 
 db.users = require('./user.model')(sequelize, Sequelize)
 db.document = require('./doc.model')(sequelize, Sequelize)
+
+db.connectionTest = async (req, res) => {
+  try {
+    await sequelize.authenticate()
+    console.log(`Successfully connected to database "${dbConfig.DB}"`)
+  } catch (error) {
+    console.error(`Unable to connect to the database "${dbConfig.DB}":`, error)
+  }
+}
 
 module.exports = db
