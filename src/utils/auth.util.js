@@ -4,9 +4,8 @@ const getUserPasswordAuth = (authHeader) => {
   const decodedBasicToken = Buffer.from(authHeader.split(' ')[1], 'base64')
     .toString('ascii')
     .split(':')
-  // const username = decodedBasicToken[0]
-  // const password = decodedBasicToken[1]
-  const { username, password } = decodedBasicToken
+  const username = decodedBasicToken[0]
+  const password = decodedBasicToken[1]
   return { username, password }
 }
 

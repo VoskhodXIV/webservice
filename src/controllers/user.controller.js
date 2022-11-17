@@ -268,6 +268,7 @@ const verifyUser = async (req, res) => {
               ) {
                 const userUpdate = {
                   verified: true,
+                  account_updated: new Date(),
                 }
                 User.update(userUpdate, {
                   where: {
@@ -276,9 +277,8 @@ const verifyUser = async (req, res) => {
                 })
                   .then((result) => {
                     client.increment('endpoint.update.user')
-                    res.status(204).send({
+                    res.status(200).send({
                       message: 'Successfully Verified!',
-                      result,
                     })
                   })
                   .catch((err) => {
