@@ -189,6 +189,7 @@ This cloud-native web application RESTful API mirror the API mentioned in the [S
       writeOnly: true
     username*: string($email)
       example: jane.doe@example.com
+    verified: boolean
     account_created: string($date-time)
       example: 2016-08-29T09:12:33.001Z
       readOnly: true
@@ -365,6 +366,10 @@ Create the `.env` file on the fly, when unpacking artifacts! You will need to de
 ## :warning: IMPORTANT
 
 To test the application locally, you will need to use the `.env.test` dotenv configuration. To run the application locally, create a new `.env` referring to the `.env.test` dotenv configuration.
+
+## :construction: WIP
+
+Need to streamline a few things, starting with Amazon DynamoDB and SNS util. These are yet to be made modular. The `app.config.js` is also to be made modular, with two separate objects for RDS configuration and AWS configuration.
 
 ## :ninja: Author
 

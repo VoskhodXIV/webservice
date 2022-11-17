@@ -1,6 +1,6 @@
 const Sequelize = require('sequelize')
 
-const dbConfig = require('../configs/db.config')
+const dbConfig = require('../configs/app.config')
 
 // https://github.com/sequelize/sequelize/issues/10015
 const sequelize = new Sequelize(dbConfig.DB, dbConfig.USER, dbConfig.PASSWORD, {

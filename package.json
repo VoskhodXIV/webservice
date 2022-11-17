@@ -1,6 +1,6 @@
 {
   "name": "webapp",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Web application for CSYE-6225",
   "main": "index.js",
   "repository": "git@github.com:sydrawat01/webapp.git",

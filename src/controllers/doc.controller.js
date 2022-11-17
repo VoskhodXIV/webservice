@@ -1,8 +1,8 @@
 const { v4: uuidv4 } = require('uuid')
 
 const statsd = require('node-statsd')
-const dbConfig = require('../configs/db.config')
-const { s3Uploadv2, s3Deletev2 } = require('../middlewares/s3Util')
+const appConfig = require('../configs/app.config')
+const { s3Uploadv2, s3Deletev2 } = require('../utils/s3.util')
 const db = require('../models')
 const logger = require('../configs/logger.config')
 
@@ -10,8 +10,8 @@ const User = db.users
 const Document = db.document
 
 const client = new statsd({
-  host: dbConfig.METRICS_HOSTNAME,
-  port: dbConfig.METRICS_PORT,
+  host: appConfig.METRICS_HOSTNAME,
+  port: appConfig.METRICS_PORT,
 })
 
 const uploadDoc = async (req, res) => {
@@ -69,13 +69,11 @@ const uploadDoc = async (req, res) => {
   } catch (err) {
     logger.warn(
       `Bad Request ${method} ${protocol}://${hostname}${originalUrl}`,
-      {
-        metaData,
-      }
+      err
     )
     return res
       .status(400)
-      .send({ message: 'Bad Request, check the file to upload!' })
+      .send({ message: 'Bad Request, check the file to upload!', err })
   }
 }
 
@@ -90,7 +88,7 @@ const listDocs = async (req, res) => {
   try {
     const userData = await User.findOne({
       where: {
-        username: global.username,
+        username: req.user.username,
       },
     })
     const { id } = userData
@@ -132,7 +130,7 @@ const getDocumentDetails = async (req, res) => {
   try {
     const userData = await User.findOne({
       where: {
-        username: global.username,
+        username: req.user.username,
       },
     })
     const { id } = userData

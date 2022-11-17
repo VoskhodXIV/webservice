@@ -1,6 +1,7 @@
 require('dotenv').config()
 const multer = require('multer')
 const { S3 } = require('aws-sdk')
+const appConfig = require('../configs/app.config')
 const db = require('../models')
 
 const User = db.users
@@ -25,7 +26,7 @@ const s3Uploadv2 = async (files) => {
   const { id } = userData
   const params = files.map((file) => {
     return {
-      Bucket: process.env.AWS_BUCKET_NAME,
+      Bucket: appConfig.AWS_BUCKET_NAME,
       Key: `${id}/${file.originalname}`,
       Body: file.buffer,
     }
@@ -46,7 +47,7 @@ const s3Deletev2 = async (fileName) => {
   })
   const { id } = userData
   const param = {
-    Bucket: process.env.AWS_BUCKET_NAME,
+    Bucket: appConfig.AWS_BUCKET_NAME,
     Key: `${id}/${fileName}`,
   }
   const res = await s3.deleteObject(param).promise()

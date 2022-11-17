@@ -1,10 +1,10 @@
 const statsd = require('node-statsd')
 const logger = require('../configs/logger.config')
-const dbConfig = require('../configs/db.config')
+const appConfig = require('../configs/app.config')
 
 const client = new statsd({
-  host: dbConfig.METRICS_HOSTNAME,
-  port: dbConfig.METRICS_PORT,
+  host: appConfig.METRICS_HOSTNAME,
+  port: appConfig.METRICS_PORT,
 })
 
 const health = (req, res) => {
