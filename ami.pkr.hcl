@@ -110,4 +110,9 @@ build {
       "./scripts/post-install.sh",
     ]
   }
+
+  post-processor "manifest" {
+    output     = "manifest.json"
+    strip_path = true
+  }
 }

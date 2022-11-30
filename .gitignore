@@ -133,3 +133,4 @@ dist
 *.zip
 *.tar.gz
 *.tar
+manifest*

@@ -1,4 +1,4 @@
-name: Packer custom AMI deployment to AWS Prod
+name: Instance Refresh
 
 env:
   ARTIFACT_NAME: webapp
@@ -8,6 +8,7 @@ on:
   push:
     branches: [ master ]
 jobs:
+  # Check basic tests
   tests:
     runs-on: ubuntu-latest
     strategy:
@@ -35,7 +36,7 @@ jobs:
   packer:
     needs: tests
     runs-on: ubuntu-latest
-    name: Build AWS Custom AMI with Node Application artifacts
+    name: Build AWS Custom AMI with REST API app artifacts
     steps:
       - name: Checkout code from branch
         uses: actions/checkout@v2
@@ -57,7 +58,7 @@ jobs:
         with:
           aws-access-key-id: ${{ secrets.AWS_DEV_ACCESS_KEY }}
           aws-secret-access-key: ${{ secrets.AWS_DEV_SECRET_KEY }}
-          aws-region: ${{ env.AWS_REGION }}
+          aws-region: ${{ secrets.AWS_REGION }}
 
       - name: Packer init
         uses: hashicorp/packer-github-actions@master
@@ -79,3 +80,60 @@ jobs:
           target: ami.pkr.hcl
         env:
           PACKER_LOG: 1
+  # Launch template instance refresh
+  instance_refresh:
+    needs: packer
+    runs-on: ubuntu-latest
+    name: Instance refresh using ASG Launch Template
+    steps:
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_PROD_ACCESS_KEY }}
+          aws-secret-access-key: ${{ secrets.AWS_PROD_SECRET_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+    steps:
+      - name: Install jq and configure variables
+        run: |
+          sudo apt-get install jq
+          ASG_NAME=${{ secrets.ASG_NAME }}
+          LAUNCH_CONFIG=${{ secrets.LAUNCH_CONFIG }}
+      - name: Configure Image ID using jq
+        run: |
+          IMAGE=$(jq -r '.builds[-1].artifact_id' manifest.json | cut -d':' -f2)
+          IMAGE_ID=$(jq -n \
+            --arg img "$IMAGE" \
+            '{"ImageId": $img}')
+      - name: Create new launch template version
+        run: |
+          create-template_version=$(aws ec2 create-launch-template-version \
+            --launch-template-name "$LAUNCH_CONFIG" \
+            --version-description updateAMI --source-version 1 \
+            --launch-template-data="$IMAGE_ID" --output text)
+      - name: Update ASG to use new launch config with latest version
+        run: |
+          update_template=$(aws autoscaling update-auto-scaling-group --auto-scaling-group-name $ASG_NAME \
+            --launch-template LaunchTemplateName="$LAUNCH_CONFIG",Version='$Latest' \
+            --output text)
+      - name: Start instance refresh
+        run: |
+          start_refresh=$(aws autoscaling start-instance-refresh \
+            --auto-scaling-group-name $ASG_NAME --output text)
+      - name: Verify instance refresh was successful
+        run: |
+          printf "Instance refresh in progress"
+          while true;
+          do
+            instance_refresh_status=$(aws autoscaling describe-instance-refreshes --auto-scaling-group-name $ASG_NAME \
+              --query "InstanceRefreshes[0].Status" --output text)
+            if [ "$instance_refresh_status" = "Successful" ]; then
+              printf "\nInstance refresh successful!"
+              break
+            fi
+            if [ "$instance_refresh_status" = "Cancelling" ] || [ "$instance_refresh_status" = "Cancelled" ] || [ "$instance_refresh_status" = "Failed" ]; then
+              echo "\nInstance refresh failed!"
+              exit 1
+            fi
+            echo -ne "."
+            sleep 10
+          done

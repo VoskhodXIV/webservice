@@ -1,6 +1,6 @@
 # :spider_web: webapp
 
-[![Packer custom AMI deployment to AWS Prod](https://github.com/ArtemisIX/webapp/actions/workflows/packer-build.yml/badge.svg)](https://github.com/ArtemisIX/webapp/actions/workflows/packer-build.yml)
+[![Instance Refresh](https://github.com/ArtemisIX/webapp/actions/workflows/packer-build.yml/badge.svg)](https://github.com/ArtemisIX/webapp/actions/workflows/packer-build.yml)
 
 RESTful Backend API service for a fullstack web application.
 
