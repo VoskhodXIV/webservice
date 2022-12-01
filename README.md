@@ -60,7 +60,18 @@ To run the server in `dev` mode, run the following command:
 
 This cloud-native web application RESTful API mirror the API mentioned in the [Swagger Docs here](https://app.swaggerhub.com/apis-docs/fall2022-csye6225/cloud-native-webapp/assignment-02#/Account).
 
+#### :ambulance: Health
+
+<details>
+
+- **GET** _/healthz_ : Get the health of the API
+  - **Response:** 200 _OK_
+
+</details>
+
 #### :closed_lock_with_key: Authenticated Users
+
+<details>
 
 - **GET** _/v1/account/{accountID}_ : Get the user account information
   - **AccountID:** String (Required)
@@ -86,7 +97,11 @@ This cloud-native web application RESTful API mirror the API mentioned in the [S
   - **Response:** 401 _Unauthorized_
   - **Response:** 403 _Forbidden_
 
+</details>
+
 #### :unlock: Unauthenticated Users
+
+<details>
 
 - `**POST** _/v1/account_ : Create a user account
   - **Request Body:** Application/JSON (Required)
@@ -103,9 +118,13 @@ This cloud-native web application RESTful API mirror the API mentioned in the [S
   - **Response:** 201 _User Created_
   - **Response** 400 _Bad Request_
 
+</details>
+
 #### :clipboard: Upload Documents
 
-- `**GET** _/v1/documents_ : Get all documents uploaded by authenticated user
+<details>
+
+- **GET** _/v1/documents_ : Get all documents uploaded by authenticated user
 
   - **Response:** 200 _OK_
 
@@ -170,6 +189,8 @@ This cloud-native web application RESTful API mirror the API mentioned in the [S
   - **Response:** 204 _No Content_
   - **Response** 401 _Unauthorized_
   - **Response** 403 _Forbidden_
+
+</details>
 
 #### Schemas
 
@@ -362,6 +383,8 @@ Validate the packer template when a pull request is opened. The PR status checks
 The AMI should be built when the PR is merged. The ami should be shared with the AWS `prod` account automatically. [This can be done by providing the AWS account ID in the packer template, [see here](https://developer.hashicorp.com/packer/plugins/builders/amazon/ebs#ami_users)].
 
 Create the `.env` file on the fly, when unpacking artifacts! You will need to declare the environment secrets in the organization secrets, and read them during the CI/CD workflow.
+
+After the AMI is built, we will create a new version of the launch template and update the original launch template. With this latest version of the launch template, we will issue an `instance-refresh` command that will update the instances running in our CloudFormation stack to use the latest version of the launch template.
 
 ## :warning: IMPORTANT
 

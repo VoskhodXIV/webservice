@@ -5,7 +5,7 @@ const app = require('../app')
 describe('Unit Test Suite', () => {
   it('GET /healthz API endpoint', (done) => {
     supertest(app)
-      .get('/health')
+      .get('/healthz')
       .expect(200)
       .end((err, res) => {
         if (err) return done(err)
