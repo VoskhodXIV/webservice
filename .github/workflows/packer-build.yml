@@ -80,46 +80,29 @@ jobs:
           target: ami.pkr.hcl
         env:
           PACKER_LOG: 1
-  # Launch template instance refresh
-  instance_refresh:
-    needs: packer
-    runs-on: ubuntu-latest
-    name: Instance refresh using ASG Launch Template
-    steps:
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
           aws-access-key-id: ${{ secrets.AWS_PROD_ACCESS_KEY }}
           aws-secret-access-key: ${{ secrets.AWS_PROD_SECRET_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
-      - name: Install jq and configure variables
+      - name: Instance Refresh automation
         run: |
           sudo apt-get install jq
           ASG_NAME=${{ secrets.ASG_NAME }}
           LAUNCH_CONFIG=${{ secrets.LAUNCH_CONFIG }}
-      - name: Configure Image ID using jq
-        run: |
           IMAGE=$(jq -r '.builds[-1].artifact_id' manifest.json | cut -d':' -f2)
           IMAGE_ID=$(jq -n \
             --arg img "$IMAGE" \
             '{"ImageId": $img}')
-      - name: Create new launch template version
-        run: |
-          create-template_version=$(aws ec2 create-launch-template-version \
+          aws ec2 create-launch-template-version \
             --launch-template-name "$LAUNCH_CONFIG" \
             --version-description updateAMI --source-version 1 \
-            --launch-template-data="$IMAGE_ID" --output text)
-      - name: Update ASG to use new launch config with latest version
-        run: |
-          update_template=$(aws autoscaling update-auto-scaling-group --auto-scaling-group-name $ASG_NAME \
-            --launch-template LaunchTemplateName="$LAUNCH_CONFIG",Version='$Latest' \
-            --output text)
-      - name: Start instance refresh
-        run: |
-          start_refresh=$(aws autoscaling start-instance-refresh \
-            --auto-scaling-group-name $ASG_NAME --output text)
-      - name: Verify instance refresh was successful
-        run: |
+            --launch-template-data="$IMAGE_ID"
+          aws autoscaling update-auto-scaling-group --auto-scaling-group-name $ASG_NAME \
+            --launch-template LaunchTemplateName="$LAUNCH_CONFIG",Version='$Latest'
+          aws autoscaling start-instance-refresh \
+            --auto-scaling-group-name $ASG_NAME
           printf "Instance refresh in progress"
           while true;
           do
