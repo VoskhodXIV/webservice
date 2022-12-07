@@ -22,13 +22,13 @@ const upload = multer({
   limits: { fileSize: MAX_SIZE, files: 1 },
 })
 router.post(
-  '/v1/documents/',
+  '/v2/documents/',
   authorizeToken,
   upload.array('document'),
   uploadDoc
 )
-router.get('/v1/documents/', authorizeToken, listDocs)
-router.get('/v1/documents/:doc_id', authorizeToken, getDocumentDetails)
-router.delete('/v1/documents/:doc_id', authorizeToken, deleteDoc)
+router.get('/v2/documents/', authorizeToken, listDocs)
+router.get('/v2/documents/:doc_id', authorizeToken, getDocumentDetails)
+router.delete('/v2/documents/:doc_id', authorizeToken, deleteDoc)
 
 module.exports = router

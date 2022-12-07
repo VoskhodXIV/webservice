@@ -4,6 +4,6 @@ const router = express.Router()
 const { health } = require('../controllers/health.controller')
 
 router.get('/', health)
-router.get('/healthz', health)
+router.get('/health', health)
 
 module.exports = router

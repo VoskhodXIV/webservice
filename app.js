@@ -7,7 +7,7 @@ const app = express()
 
 const {
   userRoutes,
-  healthz,
+  health,
   documentRoute,
 } = require('./src/routes/index.routes')
 const db = require('./src/models')
@@ -16,7 +16,7 @@ const logger = require('./src/configs/logger.config')
 app.use(helmet({ contentSecurityPolicy: false }))
 app.use(express.json())
 
-app.use('/', healthz, userRoutes, documentRoute)
+app.use('/', health, userRoutes, documentRoute)
 
 db.connectionTest()
 db.sequelize.sync()

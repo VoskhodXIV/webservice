@@ -64,7 +64,7 @@ This cloud-native web application RESTful API mirror the API mentioned in the [S
 
 <details>
 
-- **GET** _/healthz_ : Get the health of the API
+- **GET** _/health_ : Get the health of the API
   - **Response:** 200 _OK_
 
 </details>
@@ -73,13 +73,13 @@ This cloud-native web application RESTful API mirror the API mentioned in the [S
 
 <details>
 
-- **GET** _/v1/account/{accountID}_ : Get the user account information
+- **GET** _/v2/account/{accountID}_ : Get the user account information
   - **AccountID:** String (Required)
   - **Response:** 200 _OK_, **Media Type:** Application/JSON
   - **Response:** 401 _Unauthorized_
   - **Response:** 403 _Forbidden_
 
-- **PUT** _/v1/account/{accountID}_ : Update the user's account information
+- **PUT** _/v2/account/{accountID}_ : Update the user's account information
   - **AccountID:** String (Required)
   - **Request Body:** Application/JSON (Required)
 
@@ -103,7 +103,7 @@ This cloud-native web application RESTful API mirror the API mentioned in the [S
 
 <details>
 
-- `**POST** _/v1/account_ : Create a user account
+- `**POST** _/v2/account_ : Create a user account
   - **Request Body:** Application/JSON (Required)
 
     ```json
@@ -124,7 +124,7 @@ This cloud-native web application RESTful API mirror the API mentioned in the [S
 
 <details>
 
-- **GET** _/v1/documents_ : Get all documents uploaded by authenticated user
+- **GET** _/v2/documents_ : Get all documents uploaded by authenticated user
 
   - **Response:** 200 _OK_
 
@@ -143,7 +143,7 @@ This cloud-native web application RESTful API mirror the API mentioned in the [S
   - **Response** 401 _Unauthorized_
   - **Response** 403 _Forbidden_
 
-- **POST** _/v1/documents_ : Upload a document
+- **POST** _/v2/documents_ : Upload a document
   - **Request Body:**
     - file: _string_
     - fileType: _object_
@@ -165,7 +165,7 @@ This cloud-native web application RESTful API mirror the API mentioned in the [S
   - **Response** 400 _Bad Request_
   - **Response** 401 _Unauthorized_
 
-- **GET** _/v1/account/{docID}_: Get document details for authorized user
+- **GET** _/v2/account/{docID}_: Get document details for authorized user
   - **docID:** String (Required), type: UUID format
   - **Response:** 200 _OK_
 
@@ -184,7 +184,7 @@ This cloud-native web application RESTful API mirror the API mentioned in the [S
   - **Response** 401 _Unauthorized_
   - **Response** 403 _Forbidden_
 
-- **DELETE** _/v1/account/{docID}_: Delete the document for authorized user
+- **DELETE** _/v2/account/{docID}_: Delete the document for authorized user
   - **docID:** String (Required), type: UUID format
   - **Response:** 204 _No Content_
   - **Response** 401 _Unauthorized_
@@ -260,6 +260,53 @@ To run the test suite, use the following commands:
   yarn test
   #for npm users
   npm run test
+```
+
+- To perform load testing, we will use [siege](https://www.joedog.org/siege-home/), which is a HTTP regression testing and benchmarking utility.
+
+Install siege on mac:
+
+```shell
+brew install siege
+```
+
+Check your `siege` config by running the following command:
+
+```shell
+siege -C
+```
+
+To perform load testing, use the following command:
+
+```shell
+./scripts/smoke-test.sh
+```
+
+Once you run the above command, you see an output similar to the one shown below:
+
+```text
+** SIEGE 4.1.1
+** Preparing 3 concurrent users for battle.
+The server is now under siege...
+HTTP/1.1 200     0.07 secs:       2 bytes ==> GET  /health
+HTTP/1.1 200     0.07 secs:       2 bytes ==> GET  /health
+...
+HTTP/1.1 200     0.07 secs:       2 bytes ==> GET  /health
+HTTP/1.1 200     0.07 secs:       2 bytes ==> GET  /health
+HTTP/1.1 200     0.06 secs:       2 bytes ==> GET  /health
+
+Transactions:                   3000 hits
+Availability:                 100.00 %
+Elapsed time:                 121.31 secs
+Data transferred:               0.01 MB
+Response time:                  0.07 secs
+Transaction rate:              24.73 trans/sec
+Throughput:                     0.00 MB/sec
+Concurrency:                    1.66
+Successful transactions:        3000
+Failed transactions:               0
+Longest transaction:            0.59
+Shortest transaction:           0.06
 ```
 
 ## :rocket: Production

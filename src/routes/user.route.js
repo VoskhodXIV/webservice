@@ -13,9 +13,9 @@ const {
 } = require('../controllers/user.controller')
 const authorizeToken = require('../middlewares/auth')(User, logger)
 
-router.post('/v1/account/', createUser)
-router.get('/v1/account/:id', authorizeToken, fetchUserData)
-router.put('/v1/account/:id', authorizeToken, updateUserData)
-router.get('/v1/verifyUserEmail/', verifyUser)
+router.post('/v2/account/', createUser)
+router.get('/v2/account/:id', authorizeToken, fetchUserData)
+router.put('/v2/account/:id', authorizeToken, updateUserData)
+router.get('/v2/verifyUserEmail/', verifyUser)
 
 module.exports = router

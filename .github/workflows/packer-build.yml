@@ -99,10 +99,13 @@ jobs:
             --launch-template-name "$LAUNCH_CONFIG" \
             --version-description updateAMI --source-version 1 \
             --launch-template-data="$IMAGE_ID"
+          TEMPLATE_VERSION=$(aws ec2 describe-launch-template-versions --launch-template-name="$LAUNCH_CONFIG" \
+            --filters="Name=is-default-version,Values=false" \
+            --query 'sort_by(LaunchTemplateVersions, &CreateTime)[-1].[VersionNumber]' --output text)
           aws autoscaling update-auto-scaling-group --auto-scaling-group-name $ASG_NAME \
-            --launch-template LaunchTemplateName="$LAUNCH_CONFIG",Version='$Latest'
+            --launch-template LaunchTemplateName="$LAUNCH_CONFIG",Version=$TEMPLATE_VERSION
           aws autoscaling start-instance-refresh \
-            --auto-scaling-group-name $ASG_NAME
+            --auto-scaling-group-name $ASG_NAME --strategy Rolling
           printf "Instance refresh in progress"
           while true;
           do
@@ -113,7 +116,7 @@ jobs:
               break
             fi
             if [ "$instance_refresh_status" = "Cancelling" ] || [ "$instance_refresh_status" = "Cancelled" ] || [ "$instance_refresh_status" = "Failed" ]; then
-              echo "\nInstance refresh failed!"
+              printf "\nInstance refresh failed!"
               exit 1
             fi
             echo -ne "."

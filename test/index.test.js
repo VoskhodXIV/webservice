@@ -3,9 +3,9 @@ const app = require('../app')
 
 // https://github.com/visionmedia/supertest
 describe('Unit Test Suite', () => {
-  it('GET /healthz API endpoint', (done) => {
+  it('GET /health API endpoint', (done) => {
     supertest(app)
-      .get('/healthz')
+      .get('/health')
       .expect(200)
       .end((err, res) => {
         if (err) return done(err)
