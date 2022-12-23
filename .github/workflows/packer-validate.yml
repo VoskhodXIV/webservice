@@ -27,5 +27,5 @@ jobs:
       - name: Validate packer template
         uses: hashicorp/packer-github-actions@master
         with:
-          command: validate
+          command: validate -evaluate-datasources
           target: ami.pkr.hcl
