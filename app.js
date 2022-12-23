@@ -18,8 +18,10 @@ app.use(express.json())
 
 app.use('/', health, userRoutes, documentRoute)
 
-db.connectionTest()
-db.sequelize.sync()
+if (ENVIRONMENT !== 'test') {
+  db.connectionTest()
+  db.sequelize.sync()
+}
 app.listen(PORT, () => {
   if (ENVIRONMENT !== 'prod')
     logger.info(`Server running at http://${HOSTNAME}:${PORT}`)

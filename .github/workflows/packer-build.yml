@@ -3,6 +3,7 @@ name: Instance Refresh
 env:
   ARTIFACT_NAME: webapp
   AWS_REGION: us-east-1
+  ENVIRONMENT: test
 
 on:
   push:
@@ -21,7 +22,7 @@ jobs:
       - name: 'Create .env file'
         run: |
           touch .env
-          echo ENVIRONMENT=${{ secrets.ENVIRONMENT }} >> .env
+          echo ENVIRONMENT=${{ env.ENVIRONMENT }} >> .env
           echo HOSTNAME=${{ secrets.HOSTNAME }} >> .env
           echo PORT=${{ secrets.PORT }} >> .env
           echo DATABASE=${{ secrets.DATABASE }} >> .env
@@ -44,7 +45,7 @@ jobs:
       - name: Build artifacts
         run: |
           touch .env
-          echo ENVIRONMENT=${{ secrets.ENVIRONMENT }} >> .env
+          echo ENVIRONMENT=${{ env.ENVIRONMENT }} >> .env
           echo HOSTNAME=${{ secrets.HOSTNAME }} >> .env
           echo PORT=${{ secrets.PORT }} >> .env
           echo DATABASE=${{ secrets.DATABASE }} >> .env

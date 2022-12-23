@@ -3,6 +3,9 @@
 
 name: Unit Test Suite
 
+env:
+  ENVIRONMENT: test
+
 # Controls when the action will run.
 on:
   # Triggers the workflow on push or pull request events but only for the main branch
@@ -22,7 +25,7 @@ jobs:
     - name: 'Create .env file'
       run: |
         touch .env
-        echo ENVIRONMENT=${{ secrets.ENVIRONMENT }} >> .env
+        echo ENVIRONMENT=${{ env.ENVIRONMENT }} >> .env
         echo HOSTNAME=${{ secrets.HOSTNAME }} >> .env
         echo PORT=${{ secrets.PORT }} >> .env
         echo DATABASE=${{ secrets.DATABASE }} >> .env
