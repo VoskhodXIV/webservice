@@ -15,6 +15,8 @@ env:
   AWS_DEV_SECRET_KEY: ${{ secrets.AWS_DEV_SECRET_KEY }}
   LAUNCH_CONFIG: ${{ secrets.LAUNCH_CONFIG }}
   ASG_NAME: ${{ secrets.ASG_NAME }}
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
 on:
   push:
     branches: [master]

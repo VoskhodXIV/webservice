@@ -1,9 +1,12 @@
 # This workflow will validate the Packer AMI templates created using the Hashicorp Configuration Language (HCL2)
 name: Packer AMI template validation
 
+env:
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
 on:
   pull_request_target:
-    branches: [ master ]
+    branches: [master]
 
 jobs:
   validate:
