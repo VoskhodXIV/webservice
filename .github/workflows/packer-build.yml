@@ -2,7 +2,20 @@ name: Instance Refresh
 
 env:
   ARTIFACT_NAME: webapp
-  AWS_REGION: us-east-1
+  AWS_REGION: ${{ secrets.AWS_REGION }}
+  ENVIRONMENT: test
+  HOSTNAME: ${{ secrets.HOSTNAME }}
+  PORT: ${{ secrets.PORT }}
+  DATABASE: ${{ secrets.DATABASE }}
+  DBUSER: ${{ secrets.DBUSER }}
+  DBPASSWORD: ${{ secrets.DBPASSWORD }}
+  AWS_PROD_ACCESS_KEY: ${{ secrets.AWS_PROD_ACCESS_KEY }}
+  AWS_PROD_SECRET_KEY: ${{ secrets.AWS_PROD_SECRET_KEY }}
+  AWS_DEV_ACCESS_KEY: ${{ secrets.AWS_DEV_ACCESS_KEY }}
+  AWS_DEV_SECRET_KEY: ${{ secrets.AWS_DEV_SECRET_KEY }}
+  LAUNCH_CONFIG: ${{ secrets.LAUNCH_CONFIG }}
+  ASG_NAME: ${{ secrets.ASG_NAME }}
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
 on:
   push:
@@ -21,12 +34,12 @@ jobs:
       - name: 'Create .env file'
         run: |
           touch .env
-          echo ENVIRONMENT=${{ secrets.ENVIRONMENT }} >> .env
-          echo HOSTNAME=${{ secrets.HOSTNAME }} >> .env
-          echo PORT=${{ secrets.PORT }} >> .env
-          echo DATABASE=${{ secrets.DATABASE }} >> .env
-          echo DBUSER=${{ secrets.DBUSER }} >> .env
-          echo DBPASSWORD=${{ secrets.DBPASSWORD }} >> .env
+          echo ENVIRONMENT=${{ env.ENVIRONMENT }} >> .env
+          echo HOSTNAME=${{ env.HOSTNAME }} >> .env
+          echo PORT=${{ env.PORT }} >> .env
+          echo DATABASE=${{ env.DATABASE }} >> .env
+          echo DBUSER=${{ env.DBUSER }} >> .env
+          echo DBPASSWORD=${{ env.DBPASSWORD }} >> .env
       - uses: actions/setup-node@v2
         with:
           node-version: ${{ matrix.node-version }}
@@ -44,21 +57,21 @@ jobs:
       - name: Build artifacts
         run: |
           touch .env
-          echo ENVIRONMENT=${{ secrets.ENVIRONMENT }} >> .env
-          echo HOSTNAME=${{ secrets.HOSTNAME }} >> .env
-          echo PORT=${{ secrets.PORT }} >> .env
-          echo DATABASE=${{ secrets.DATABASE }} >> .env
-          echo DBUSER=${{ secrets.DBUSER }} >> .env
-          echo DBPASSWORD=${{ secrets.DBPASSWORD }} >> .env
+          echo ENVIRONMENT=${{ env.ENVIRONMENT }} >> .env
+          echo HOSTNAME=${{ env.HOSTNAME }} >> .env
+          echo PORT=${{ env.PORT }} >> .env
+          echo DATABASE=${{ env.DATABASE }} >> .env
+          echo DBUSER=${{ env.DBUSER }} >> .env
+          echo DBPASSWORD=${{ env.DBPASSWORD }} >> .env
           zip -r webapp.zip ./
           pwd ./webapp
 
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
-          aws-access-key-id: ${{ secrets.AWS_DEV_ACCESS_KEY }}
-          aws-secret-access-key: ${{ secrets.AWS_DEV_SECRET_KEY }}
-          aws-region: ${{ secrets.AWS_REGION }}
+          aws-access-key-id: ${{ env.AWS_DEV_ACCESS_KEY }}
+          aws-secret-access-key: ${{ env.AWS_DEV_SECRET_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
 
       - name: Packer init
         uses: hashicorp/packer-github-actions@master
@@ -69,7 +82,7 @@ jobs:
       - name: Validate packer template
         uses: hashicorp/packer-github-actions@master
         with:
-          command: validate
+          command: validate -evaluate-datasources
           target: ami.pkr.hcl
 
       - name: Packer build
@@ -83,14 +96,14 @@ jobs:
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
-          aws-access-key-id: ${{ secrets.AWS_PROD_ACCESS_KEY }}
-          aws-secret-access-key: ${{ secrets.AWS_PROD_SECRET_KEY }}
-          aws-region: ${{ secrets.AWS_REGION }}
+          aws-access-key-id: ${{ env.AWS_PROD_ACCESS_KEY }}
+          aws-secret-access-key: ${{ env.AWS_PROD_SECRET_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
       - name: Instance Refresh automation
         run: |
           sudo apt-get install jq
-          ASG_NAME=${{ secrets.ASG_NAME }}
-          LAUNCH_CONFIG=${{ secrets.LAUNCH_CONFIG }}
+          ASG_NAME=${{ env.ASG_NAME }}
+          LAUNCH_CONFIG=${{ env.LAUNCH_CONFIG }}
           IMAGE=$(jq -r '.builds[-1].artifact_id' manifest.json | cut -d':' -f2)
           IMAGE_ID=$(jq -n \
             --arg img "$IMAGE" \
