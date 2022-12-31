@@ -3,11 +3,14 @@
 
 name: Unit Test Suite
 
+env:
+  ENVIRONMENT: test
+
 # Controls when the action will run.
 on:
   # Triggers the workflow on push or pull request events but only for the main branch
   pull_request:
-    branches: [ master ]
+    branches: [master]
 
 jobs:
   build:
@@ -18,19 +21,19 @@ jobs:
 
     name: Run unit tests
     steps:
-    - uses: actions/checkout@v2
-    - name: 'Create .env file'
-      run: |
-        touch .env
-        echo ENVIRONMENT=${{ secrets.ENVIRONMENT }} >> .env
-        echo HOSTNAME=${{ secrets.HOSTNAME }} >> .env
-        echo PORT=${{ secrets.PORT }} >> .env
-        echo DATABASE=${{ secrets.DATABASE }} >> .env
-        echo DBUSER=${{ secrets.DBUSER }} >> .env
-        echo DBPASSWORD=${{ secrets.DBPASSWORD }} >> .env
-    - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v2
-      with:
-        node-version: ${{ matrix.node-version }}
-    - run: yarn
-    - run: yarn test
+      - uses: actions/checkout@v3
+      - name: 'Create .env file'
+        run: |
+          touch .env
+          echo ENVIRONMENT=${{ env.ENVIRONMENT }} >> .env
+          echo HOSTNAME=${{ secrets.HOSTNAME }} >> .env
+          echo PORT=${{ secrets.PORT }} >> .env
+          echo DATABASE=${{ secrets.DATABASE }} >> .env
+          echo DBUSER=${{ secrets.DBUSER }} >> .env
+          echo DBPASSWORD=${{ secrets.DBPASSWORD }} >> .env
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v2
+        with:
+          node-version: ${{ matrix.node-version }}
+      - run: yarn
+      - run: yarn test
