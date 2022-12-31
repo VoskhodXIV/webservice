@@ -51,7 +51,7 @@ source "amazon-ebs" "ec2" {
   # ami_name        = "EC2-AMI-${substr(data.git-commit.commit.hash, 0, 8)}"
   # ami_name        = "EC2-AMI-{{ ${substr(data.git-commit.cwd-head.hash, 0, 8)} }}"
   region          = "${var.aws_region}"
-  ami_name        = "EC2-AMI-${local.timestamp}"
+  ami_name        = "EC2-AMI-${local.version}"
   ami_description = "EC2 AMI for CSYE 6225 built by ${data.git-commit.cwd-head.author}"
   ami_users = [
     "057919684206", # dev account ID

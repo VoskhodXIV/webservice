@@ -3,6 +3,7 @@ name: Instance Refresh
 env:
   ARTIFACT_NAME: webapp
   AWS_REGION: us-east-1
+  ENVIRONMENT: test
 
 on:
   push:
@@ -17,11 +18,11 @@ jobs:
 
     name: Run unit tests
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: 'Create .env file'
         run: |
           touch .env
-          echo ENVIRONMENT=${{ secrets.ENVIRONMENT }} >> .env
+          echo ENVIRONMENT=${{ env.ENVIRONMENT }} >> .env
           echo HOSTNAME=${{ secrets.HOSTNAME }} >> .env
           echo PORT=${{ secrets.PORT }} >> .env
           echo DATABASE=${{ secrets.DATABASE }} >> .env
@@ -39,12 +40,12 @@ jobs:
     name: Build AWS Custom AMI with REST API app artifacts
     steps:
       - name: Checkout code from branch
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Build artifacts
         run: |
           touch .env
-          echo ENVIRONMENT=${{ secrets.ENVIRONMENT }} >> .env
+          echo ENVIRONMENT=${{ env.ENVIRONMENT }} >> .env
           echo HOSTNAME=${{ secrets.HOSTNAME }} >> .env
           echo PORT=${{ secrets.PORT }} >> .env
           echo DATABASE=${{ secrets.DATABASE }} >> .env
@@ -60,26 +61,24 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_DEV_SECRET_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
 
-      - name: Packer init
-        uses: hashicorp/packer-github-actions@master
+      - name: Setup `packer`
+        uses: hashicorp/setup-packer@main
+        id: setup
         with:
-          command: init
-          target: ami.pkr.hcl
+          version: 'latest'
+
+      - name: Packer init
+        id: init
+        run: 'packer init ami.pkr.hcl'
 
       - name: Validate packer template
-        uses: hashicorp/packer-github-actions@master
-        with:
-          command: validate
-          target: ami.pkr.hcl
+        id: validate
+        run: 'packer validate -evaluate-datasources ami.pkr.hcl'
 
-      - name: Packer build
-        uses: hashicorp/packer-github-actions@master
-        with:
-          command: build
-          arguments: '-color=false -on-error=abort'
-          target: ami.pkr.hcl
-        env:
-          PACKER_LOG: 1
+      - name: Build AMI using Packer
+        id: build
+        run: 'packer build ami.pkr.hcl'
+
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:

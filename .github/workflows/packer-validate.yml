@@ -3,7 +3,7 @@ name: Packer AMI template validation
 
 on:
   pull_request:
-    branches: [ master ]
+    branches: [master]
 
 jobs:
   validate:
@@ -11,21 +11,23 @@ jobs:
     name: Validate packer template for the custom AMI
     steps:
       - name: Checkout code from branch
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Build artifacts
         run: |
           zip -r webapp.zip ./
           pwd ./webapp
 
-      - name: Packer init
-        uses: hashicorp/packer-github-actions@master
+      - name: Setup `packer`
+        uses: hashicorp/setup-packer@main
+        id: setup
         with:
-          command: init
-          target: ami.pkr.hcl
+          version: 'latest'
+
+      - name: Packer init
+        id: init
+        run: 'packer init ami.pkr.hcl'
 
       - name: Validate packer template
-        uses: hashicorp/packer-github-actions@master
-        with:
-          command: validate
-          target: ami.pkr.hcl
+        id: validate
+        run: 'packer validate -evaluate-datasources ami.pkr.hcl'

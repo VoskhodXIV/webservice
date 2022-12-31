@@ -14,10 +14,13 @@ echo "+-------------------------------------------------------------------------
 sudo cp /home/ubuntu/nodeserver.service /lib/systemd/system/nodeserver.service
 echo "Enabling the REST API Service"
 sudo systemctl daemon-reload
+sleep 5
 sudo systemctl enable nodeserver
-# sudo systemctl start nodeserver
-# sudo systemctl restart nodeserver
-# sudo systemctl status nodeserver
+sleep 5
+sudo systemctl start nodeserver
+sleep 5
+sudo systemctl restart nodeserver
+sudo systemctl status nodeserver
 APISRVC=$?
 if [ $APISRVC -eq 0 ]; then
   echo "API service is installed successfully!"
