@@ -1,17 +1,21 @@
-const AWS = require('aws-sdk')
+const { DynamoDB } = require('aws-sdk')
 const { v4: uuidv4 } = require('uuid')
+const appConfig = require('../configs/app.config')
+const logger = require('../configs/logger.config')
 
-const dynamoDatabase = new AWS.DynamoDB({
+const dynamoDatabase = new DynamoDB({
   apiVersion: '2012-08-10',
-  region: process.env.AWS_REGION || 'us-east-1',
+  region: appConfig.AWS_REGION || 'us-east-1',
 })
+
+const TableName = appConfig.DYNAMO_DB_TABLE_NAME
 
 const addToken = async (username) => {
   const token = uuidv4()
   const epochTime = new Date().getTime() / 1000 + 300
 
   const parameter = {
-    TableName: 'csye-6225',
+    TableName,
     Item: {
       Email: {
         S: username,
@@ -24,29 +28,33 @@ const addToken = async (username) => {
       },
     },
   }
-  await dynamoDatabase.putItem(parameter).promise()
+  try {
+    const dynamoDB = await dynamoDatabase.putItem(parameter).promise()
+    logger.info(`dynamoDB putItem() success`)
+  } catch (err) {
+    logger.error(`dynamoDB putItem() error!`, { err })
+  }
+  return token
 }
 
 const verifyToken = async (email, token) => {
   const params = {
-    TableName: 'csye-6225',
+    TableName,
     Key: {
       Email: {
         S: email,
+      },
+      Token: {
+        S: token,
       },
     },
   }
   const data = await dynamoDatabase.getItem(params).promise()
   if (data.Item && data.Item.Token && data.Item.TimeToLive) {
-    const token = data.Item.Token.S
-    const ttl = data.Item.TimeToLive.N
-    const curr = new Date().getTime() / 1000
-    if (
-      data.Item.Email.S === user.dataValues.username &&
-      data.Item.Token.S === req.query.token &&
-      curr < ttl
-    )
-      return true
+    const dbToken = data.Item.Token.S
+    const tokenTTL = data.Item.TimeToLive.N
+    const currTime = new Date().getTime() / 1000
+    if (dbToken === token && currTime < tokenTTL) return true
   }
   return false
 }
