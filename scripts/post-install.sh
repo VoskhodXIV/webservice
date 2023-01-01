@@ -13,12 +13,8 @@ echo "|                                                                         
 echo "+-----------------------------------------------------------------------------------------------------------------------------------------+"
 sudo cp /home/ubuntu/nodeserver.service /lib/systemd/system/nodeserver.service
 echo "Enabling the REST API Service"
-sudo systemctl daemon-reload
-sleep 5
 sudo systemctl enable nodeserver
-sleep 5
 sudo systemctl start nodeserver
-sleep 5
 sudo systemctl restart nodeserver
 sudo systemctl status nodeserver
 APISRVC=$?

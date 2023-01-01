@@ -1,19 +1,17 @@
-const AWS = require('aws-sdk')
+const { SNS } = require('aws-sdk')
 const appConfig = require('../configs/app.config')
+const logger = require('../configs/logger.config')
 
-AWS.config.update({
-  region: process.env.AWS_REGION || 'us-east-1',
-})
-
-const sns = new AWS.SNS({
+const sns = new SNS({
   region: appConfig.AWS_REGION || 'us-east-1',
 })
 
-// TODO: modularize
+const TopicArn = appConfig.SNS_TOPIC_ARN
+
 const publishSNSMessage = async (message) => {
   const params = {
     Message: JSON.stringify(message),
-    TopicArn: 'arn:aws:sns:us-east-1:235271618064:verify_email',
+    TopicArn,
   }
   try {
     const messageData = await sns.publish(params).promise()

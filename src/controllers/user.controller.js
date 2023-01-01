@@ -1,25 +1,16 @@
 const { v4: uuidv4 } = require('uuid')
-const bcrypt = require('bcrypt')
 const statsd = require('node-statsd')
-const AWS = require('aws-sdk')
-const logger = require('../configs/logger.config')
 const db = require('../models/index')
+const logger = require('../configs/logger.config')
 const appConfig = require('../configs/app.config')
 const { hashPassword } = require('../utils/auth.util')
+const { addToken, verifyToken } = require('../utils/dynamo.util')
+const { publishSNSMessage } = require('../utils/sns.util')
 
 const User = db.users
 const client = new statsd({
   host: appConfig.METRICS_HOSTNAME,
   port: appConfig.METRICS_PORT,
-})
-
-AWS.config.update({
-  region: process.env.AWS_REGION || 'us-east-1',
-})
-const sns = new AWS.SNS({})
-const dynamoDatabase = new AWS.DynamoDB({
-  apiVersion: '2012-08-10',
-  region: process.env.AWS_REGION || 'us-east-1',
 })
 
 const formatUser = (user) => {
@@ -50,7 +41,11 @@ const createUser = async (req, res) => {
   logger.info(`Requesting ${method} ${protocol}://${hostname}${originalUrl}`, {
     metaData,
   })
-  const hash = await bcrypt.hash(req.body.password, 10)
+  logger.info(
+    `Hashing password for user ${req.body.first_name} ${req.body.last_name}`
+  )
+  const hash = await hashPassword(req.body.password)
+  // Email regex format validation
   const emailRegex =
     /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/
   if (!emailRegex.test(req.body.username)) {
@@ -59,6 +54,27 @@ const createUser = async (req, res) => {
       message: 'Enter your Email ID in correct format. Example: abc@xyz.com',
     })
   }
+  // Validation for ID, account_created, account_updated fields
+  logger.info(`Validating request body for user object`)
+  if (req.body.id || req.body.account_created || req.body.account_updated) {
+    const message =
+      'id, account_created and account_updated fields cannot be sent in the request body'
+    logger.warn(`Invalid request body for user object`, { message })
+    return res.status(400).json({ message })
+  }
+  // Null check validation for username, password, first_name, last_name fields
+  if (
+    !req.body.username ||
+    !req.body.password ||
+    !req.body.first_name ||
+    !req.body.last_name
+  ) {
+    const message =
+      'username, password, first_name, last_name fields are required in the request body'
+    logger.warn(`Invalid request body for user object`, { message })
+    return res.status(400).json({ message })
+  }
+  // Create the new user
   const getUser = await User.findOne({
     where: {
       username: req.body.username,
@@ -74,73 +90,53 @@ const createUser = async (req, res) => {
       message: 'User already exists!',
     })
   } else {
-    const user = {
+    const user = User.build({
       id: uuidv4(),
       first_name: req.body.first_name,
       last_name: req.body.last_name,
       password: hash,
       username: req.body.username,
       verified: false,
-    }
+      account_created: new Date(),
+      account_updated: new Date(),
+    })
 
-    User.create(user)
-      .then(async (data) => {
-        const randomnanoID = uuidv4()
+    try {
+      // Adding user access token to the DynamoDB
+      logger.info(`Adding user ${req.body.username} to dynamoDB`)
+      const token = await addToken(user.username)
 
-        const epochTime = new Date().getTime() / 1000 + 300
-        const parameter = {
-          TableName: 'csye-6225',
-          Item: {
-            Email: {
-              S: data.username,
-            },
-            Token: {
-              S: randomnanoID,
-            },
-            TimeToLive: {
-              N: epochTime.toString(),
-            },
-          },
-        }
-        try {
-          const dydb = await dynamoDatabase.putItem(parameter).promise()
-          logger.info('dynamoDatabase putItem() success:', dydb)
-        } catch (err) {
-          logger.error('dynamoDatabase has an error:', err)
-        }
-        const msg = {
-          username: data.username,
-          token: randomnanoID,
-        }
-        logger.info('User token info:', { msg })
-        const params = {
-          Message: JSON.stringify(msg),
-          Subject: randomnanoID,
-          TopicArn: 'arn:aws:sns:us-east-1:235271618064:verify_email',
-        }
-        const publishTextPromise = await sns.publish(params).promise()
-        console.log('publishTextPromise', publishTextPromise)
-        logger.info('Successfully created user')
-        res.status(201).send({
-          id: data.id,
-          first_name: data.first_name,
-          last_name: data.last_name,
-          username: data.username,
-          verified: data.verified,
-          account_created: data.account_created,
-          account_updated: data.account_updated,
-        })
-      })
-      .catch((err) => {
-        logger.error(
-          'Internal server error occurred while creating the user',
-          err
-        )
-        res.status(500).send({
+      // Send message to Amazon SNS
+      logger.info(`Sending message to Amazon SNS`)
+      const message = {
+        username: user.username,
+        first_name: user.first_name,
+        last_name: user.last_name,
+        token,
+      }
+      await publishSNSMessage(message)
+
+      // Storing the user in the database
+      logger.info(`Storing user-data in the database`)
+      const data = await user.save()
+      const formattedData = formatUser(data.dataValues)
+      return res.status(201).json(formattedData)
+    } catch (err) {
+      // If username already exists, return a 400 error
+      if (err.name === 'SequelizeUniqueConstraintError') {
+        logger.error(`User ${req.body.username} already exists`)
+        return res.status(400).json({ message: 'Username already exists' })
+      }
+      if (err.name === 'SequelizeValidationError') {
+        logger.error('Invalid request body for user object')
+        return res.status(400).json({
           message:
-            err.message || 'Some error occurred while creating the user!',
+            'Invalid username, Username should be an email Ex: abc@domain.com',
         })
-      })
+      }
+      logger.error(err)
+      return res.status(500).json({ message: 'Internal server error' })
+    }
   }
 }
 
@@ -226,6 +222,14 @@ const fetchUserData = async (req, res) => {
 }
 
 const verifyUser = async (req, res) => {
+  client.increment('endpoint.verify.user')
+  const { protocol, method, hostname, originalUrl } = req
+  const headers = { ...req.headers }
+  const metaData = { protocol, method, hostname, originalUrl, headers }
+  logger.info(`Requesting ${method} ${protocol}://${hostname}${originalUrl}`, {
+    metaData,
+  })
+
   const user = await User.findOne({
     where: {
       username: req.query.email,
@@ -237,74 +241,47 @@ const verifyUser = async (req, res) => {
         message: 'Already Successfully Verified!',
       })
     } else {
-      const params = {
-        TableName: 'csye-6225',
-        Key: {
-          Email: {
-            S: req.query.email,
-          },
-          Token: {
-            S: req.query.token,
-          },
-        },
-      }
-      // Call DynamoDB to read the item from the table
-      dynamoDatabase.getItem(params, (err, data) => {
-        if (err) {
-          logger.error('Cannot get items from dynamoDB', err)
-          res.status(400).send({
-            message: 'unable to verify',
-          })
-        } else {
-          logger.info('Success dynamoDatabase getItem()', data.Item)
-          try {
-            const ttl = data.Item.TimeToLive.N
-            const curr = new Date().getTime() / 1000
-            logger.info('Epoch and Current time', { ttl, curr })
-            if (curr < ttl) {
-              if (
-                data.Item.Email.S === user.dataValues.username &&
-                data.Item.Token.S === req.query.token
-              ) {
-                const userUpdate = {
-                  verified: true,
-                  account_updated: new Date(),
-                }
-                User.update(userUpdate, {
-                  where: {
-                    username: req.query.email,
-                  },
-                })
-                  .then((result) => {
-                    client.increment('endpoint.update.user')
-                    res.status(200).send({
-                      message: 'Successfully Verified!',
-                    })
-                  })
-                  .catch((err) => {
-                    res.status(500).send({
-                      message: 'Error Updating the user',
-                      err,
-                    })
-                  })
-              } else {
-                res.status(400).send({
-                  message: 'Token and email did not match',
-                })
-              }
-            } else {
-              res.status(400).send({
-                message: 'Token expired! Cannot verify email',
-              })
-            }
-          } catch (err) {
-            logger.error('Some error occurred', err)
-            res.status(400).send({
-              message: 'Unable to verify',
-            })
+      // verify email and token
+      try {
+        const isValid = await verifyToken(req.query.email, req.query.token)
+        if (isValid) {
+          logger.info(
+            `User email and token matched! Updating user details in database`
+          )
+          const userUpdate = {
+            verified: true,
+            account_updated: new Date(),
           }
+          User.update(userUpdate, {
+            where: {
+              username: req.query.email,
+            },
+          })
+            .then((result) => {
+              client.increment('endpoint.update.user')
+              res.status(200).send({
+                message: 'Successfully Verified!',
+              })
+            })
+            .catch((err) => {
+              res.status(500).send({
+                message: 'Error Updating the user',
+                err,
+              })
+            })
+        } else {
+          logger.error(`User email is invalid OR the token has expired!`)
+          res.status(400).send({
+            message: 'Email or token is invalid',
+          })
         }
-      })
+      } catch (err) {
+        logger.error(`unable to verify user, internal error occurred bro`)
+        res.status(500).send({
+          message: 'Internal server error',
+          err,
+        })
+      }
     }
   } else {
     res.status(400).send({

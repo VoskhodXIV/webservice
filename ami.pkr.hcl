@@ -51,18 +51,19 @@ source "amazon-ebs" "ec2" {
   # ami_name        = "EC2-AMI-${substr(data.git-commit.commit.hash, 0, 8)}"
   # ami_name        = "EC2-AMI-{{ ${substr(data.git-commit.cwd-head.hash, 0, 8)} }}"
   region          = "${var.aws_region}"
-  ami_name        = "EC2-AMI-${local.version}"
+  ami_name        = "Linux-AMI-${local.truncated_sha}[${var.ubuntu_version}-${local.timestamp}]"
   ami_description = "EC2 AMI for CSYE 6225 built by ${data.git-commit.cwd-head.author}"
   ami_users = [
     "057919684206", # dev account ID
     "235271618064", # prod account ID
   ]
   tags = {
-    Name        = "EC2-AMI-${local.version}"
-    Base_AMI_ID = "${var.source_ami}"
-    OS_Version  = "Ubuntu"
-    Release     = "22.04 LTS"
-    Author      = "${data.git-commit.cwd-head.author}"
+    Name         = "Linux-AMI-${local.truncated_sha}"
+    Base_AMI_ID  = "${var.source_ami}"
+    TimeStamp_ID = "${local.timestamp}"
+    OS_Version   = "Ubuntu"
+    Release      = "22.04 LTS"
+    Author       = "${data.git-commit.cwd-head.author}"
   }
   ami_regions = [
     "us-east-1",
