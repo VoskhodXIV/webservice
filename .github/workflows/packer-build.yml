@@ -54,6 +54,20 @@ jobs:
           zip -r webapp.zip ./
           pwd ./webapp
 
+      - name: Packer variables
+        run: |
+          touch ami.pkrvars.hcl
+          echo ami_prefix=${{ secrets.AMI_PREFIX }} >> ami.pkrvars.hcl
+          echo OS=$${{ secrets.OS }} >> ami.pkrvars.hcl
+          echo ubuntu_version=${{ secrets.VERSION }} >> ami.pkrvars.hcl
+          echo ssh_username=${{ secrets.SSH }} >> ami.pkrvars.hcl
+          echo subnet_id=${{ secrets.SUBNET_ID }} >> ami.pkrvars.hcl
+          echo dev_id=${{ secrets.DEV_ID }} >> ami.pkrvars.hcl
+          echo prod_id=${{ secrets.PROD_ID }} >> ami.pkrvars.hcl
+          echo source_ami=${{ secrets.SOURCE_AMI }} >> ami.pkrvars.hcl
+          echo aws_region=${{ env.AWS_REGION }} >> ami.pkrvars.hcl
+          echo instance_type=${{ secrets.INSTANCE__TYPE}} >> ami.pkrvars.hcl
+
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1-node16
         with:
@@ -67,13 +81,17 @@ jobs:
         with:
           version: 'latest'
 
+      - name: Packer format
+        id: fmt
+        run: 'packer fmt .'
+
       - name: Packer init
         id: init
         run: 'packer init ami.pkr.hcl'
 
       - name: Validate packer template
         id: validate
-        run: 'packer validate -evaluate-datasources ami.pkr.hcl'
+        run: 'packer validate -evaluate-datasources --var-file=ami.pkrvars.hcl ami.pkr.hcl'
 
       - name: Build AMI using Packer
         id: build

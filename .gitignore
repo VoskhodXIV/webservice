@@ -134,3 +134,6 @@ dist
 *.tar.gz
 *.tar
 manifest*
+
+# packer
+ami.pkrvars.hcl
