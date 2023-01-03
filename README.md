@@ -14,7 +14,6 @@ To install and run the app locally, you need to have the following installed on 
 - `node v.16.17.0` and above [[link](https://nodejs.org/en/download/)]
 - `yarn` (package manager) [[link](https://formulae.brew.sh/formula/yarn)]
 - `Postman` to demo hit the APIs [[link](https://www.postman.com/downloads/)]
--
 
 ## :arrow_heading_down: Installation
 
@@ -383,10 +382,6 @@ Install application prerequisites, middlewares and runtime dependencies here. Up
 
 > NOTE: The file provisioners must copy the application artifacts and configuration to the right location.
 
-#### [systemd](https://systemd.io/)
-
-`systemd` s a suite of basic building blocks for a Linux system. It provides a system and service manager that runs as PID 1 and starts the rest of the system.. This will help us bootstrap our application and have it in a running state when we launch our custom AMI EC2 instance using the CloudFormation stack.
-
 #### Custom AMI creation
 
 To create the custom AMI from the `.pkr.hcl` template created earlier, use the commands given below:
@@ -410,7 +405,7 @@ packer fmt .
 # to validate syntax only
 packer validate -syntax-only .
 # to validate the template as a whole
-packer validate .
+packer validate -evaluate-datasources .
 ```
 
 - To build the custom AMI using packer, use:
@@ -419,13 +414,45 @@ packer validate .
 packer build <filename>.pkr.hcl
 ```
 
+#### Packer HCL Variables
+
+To prevent pushing sensitive details to your version control, we can have variables in the `<file-name>.pkr.hcl` file, and then declare the actual values for these variables in another HCL file with the extension `.pkrvars.hcl`.
+
+If you want to validate your build configuration, you can use the following command:
+
+```shell
+packer validate -evaluate-datasources --var-file=<variables-file>.pkrvars.hcl <build-config>.pkr.hcl
+```
+
+> NOTE: To use the `-evaluate-datasources` parameter, you'll have to update packer to `v1.8.5` or greater. For more details, refer [this issue](https://github.com/hashicorp/packer/issues/12056).
+
+To use this variables files when creating a golden image, use the build command as shown:
+
+```shell
+packer build --var-file=<variables-file>.pkrvars.hcl <build-config>.pkr.hcl
+```
+
+> NOTE: Using variables is the preferred way/best practice to build a custom AMI using HCP Packer!
+
+#### [systemd](https://systemd.io/)
+
+`systemd` is a suite of basic building blocks for a Linux system. It provides a system and service manager that runs as PID 1 and starts the rest of the system.. This will help us bootstrap our application and have it in a running state when we launch our custom AMI EC2 instance using the CloudFormation stack.
+
+For a detailed example, please refer [this ShellHacks blog](https://www.shellhacks.com/systemd-service-file-example/).
+
 ## :arrows_clockwise: CI/CD pipelines
+
+### Unit tests
+
+This CI pipeline must run before changes are merged via a PR to the upstream master branch. Once the unit tests pass, the CI pipeline should check the validity of the packer build configuration.
 
 ### Validate template
 
-Validate the packer template when a pull request is opened. The PR status checks should fail and block merge in case the template is invalid.
+This CI pipeline will validate the packer build template when a pull request is opened. The PR status checks should fail and block merge in case the template is invalid.
 
 ### Build AMI
+
+This is the CD pipeline for our organization.
 
 The AMI should be built when the PR is merged. The ami should be shared with the AWS `prod` account automatically. [This can be done by providing the AWS account ID in the packer template, [see here](https://developer.hashicorp.com/packer/plugins/builders/amazon/ebs#ami_users)].
 
@@ -433,13 +460,13 @@ Create the `.env` file on the fly, when unpacking artifacts! You will need to de
 
 After the AMI is built, we will create a new version of the launch template and update the original launch template. With this latest version of the launch template, we will issue an `instance-refresh` command that will update the instances running in our CloudFormation stack to use the latest version of the launch template.
 
+Using the `instance-refresh` approach, we are just replacing the golden image in our app infra where instances using an older golden image are sacked, and new instances are launched using the latest golden image(AMI).
+
 ## :warning: IMPORTANT
 
-To test the application locally, you will need to use the `.env.test` dotenv configuration. To run the application locally, create a new `.env` referring to the `.env.test` dotenv configuration.
+To test the application locally, you will need to create a `.env` file using the `.env.example` dotenv configuration as a reference.
 
-## :construction: WIP
-
-Need to streamline a few things, starting with Amazon DynamoDB and SNS util. These are yet to be made modular. The `app.config.js` is also to be made modular, with two separate objects for RDS configuration and AWS configuration.
+To create an AWS AMI using packer locally, you'll have to create a new file with the `.pkrvars.hcl` extension. You can refer the `template.pkrvars.hcl.example` as a template example.
 
 ## :ninja: Author
 
