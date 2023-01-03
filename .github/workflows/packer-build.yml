@@ -95,7 +95,7 @@ jobs:
 
       - name: Build AMI using Packer
         id: build
-        run: 'packer build ami.pkr.hcl'
+        run: 'packer build --var-file=ami.pkrvars.hcl ami.pkr.hcl'
 
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1-node16
