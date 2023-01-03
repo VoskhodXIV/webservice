@@ -21,16 +21,16 @@ jobs:
       - name: Packer variables
         run: |
           touch ami.pkrvars.hcl
-          echo ami_prefix=${{ secrets.AMI_PREFIX }} >> ami.pkrvars.hcl
-          echo OS=$${{ secrets.OS }} >> ami.pkrvars.hcl
-          echo ubuntu_version=${{ secrets.VERSION }} >> ami.pkrvars.hcl
-          echo ssh_username=${{ secrets.SSH }} >> ami.pkrvars.hcl
-          echo subnet_id=${{ secrets.SUBNET_ID }} >> ami.pkrvars.hcl
-          echo dev_id=${{ secrets.DEV_ID }} >> ami.pkrvars.hcl
-          echo prod_id=${{ secrets.PROD_ID }} >> ami.pkrvars.hcl
-          echo source_ami=${{ secrets.SOURCE_AMI }} >> ami.pkrvars.hcl
-          echo aws_region=${{ env.AWS_REGION }} >> ami.pkrvars.hcl
-          echo instance_type=${{ secrets.INSTANCE_TYPE}} >> ami.pkrvars.hcl
+          echo ami_prefix=\"${{ secrets.AMI_PREFIX }}\" >> ami.pkrvars.hcl
+          echo OS=\"${{ secrets.OS }}\" >> ami.pkrvars.hcl
+          echo ubuntu_version=\"${{ secrets.VERSION }}\" >> ami.pkrvars.hcl
+          echo ssh_username=\"${{ secrets.SSH }}\" >> ami.pkrvars.hcl
+          echo subnet_id=\"${{ secrets.SUBNET_ID }}\" >> ami.pkrvars.hcl
+          echo dev_id=\"${{ secrets.DEV_ID }}\" >> ami.pkrvars.hcl
+          echo prod_id=\"${{ secrets.PROD_ID }}\" >> ami.pkrvars.hcl
+          echo source_ami=\"${{ secrets.SOURCE_AMI }}\" >> ami.pkrvars.hcl
+          echo aws_region=\"${{ env.AWS_REGION }}\" >> ami.pkrvars.hcl
+          echo instance_type=\"${{ secrets.INSTANCE_TYPE}}\" >> ami.pkrvars.hcl
 
       - name: Setup `packer`
         uses: hashicorp/setup-packer@main
